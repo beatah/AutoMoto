@@ -1,0 +1,19 @@
+﻿@model AutoMoto.Contracts.ViewModels.ManufacturerViewModel
+@{
+    ViewBag.Title = "Marka";
+}
+
+<h2>Dodaj markę</h2>
+
+@using (Html.BeginForm(Model.Action, "Admin"))
+{
+    @Html.HiddenFor(m => m.Id)
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Name)
+        @Html.TextBoxFor(m => m.Name, new { @class = "form-control", autofocus = "autofocus" })
+
+    </div>
+
+    <button type="submit" class="btn btn-primary">Zapisz</button>
+}
