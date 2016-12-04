@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMoto.Contracts.Dtos;
 using AutoMoto.Contracts.ViewModels;
 using AutoMoto.Models;
 
@@ -9,6 +10,16 @@ namespace AutoMoto.Web.App_Start
         public OrganizationProfile()
         {
             CreateMap<Manufacturer, ManufacturerViewModel>();
+            CreateMap<Advertisement, AdvertisementDetailsViewModel>();
+            CreateMap<Notification, NotificationDto>();
+            Mapper.Initialize(cfg =>
+            {
+                cfg.CreateMap<Notification, NotificationDto>()
+                    .Include<FollowingNotification, FollowingNotificationDto>();
+                cfg.CreateMap<FollowingNotification, FollowingNotificationDto>();
+
+            });
+
         }
     }
 }

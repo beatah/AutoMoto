@@ -2,6 +2,7 @@ using AutoMoto.Models;
 using Repository.Pattern.Ef6;
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace AutoMoto.Model.Models
 {
@@ -25,14 +26,15 @@ namespace AutoMoto.Model.Models
         public virtual ICollection<AspNetRole> AspNetRoles { get; set; }
         public ICollection<AspNetUserLogin> AspNetUserLogins { get; set; }
 
-        public ICollection<Address> Addresses { get; set; }
+        public Address Address { get; set; }
+        public int AddressId { get; set; }
         public ICollection<Message> MessagesSent { get; set; }
         public ICollection<Message> MessagesReceived { get; set; }
         public ICollection<UserNotification> Notifications { get; set; }
-        //public ICollection<IdentityUser> Followers { get; set; }
-        //  public ICollection<IdentityUser> Followees { get; set; }
+        public ICollection<Following> Followers { get; set; }
+        public ICollection<Following> Followees { get; set; }
+        [JsonIgnore]
         public ICollection<Advertisement> Advertisements { get; set; }
-
 
         public AspNetUser()
         {
@@ -40,6 +42,10 @@ namespace AutoMoto.Model.Models
             AspNetUserClaims = new List<AspNetUserClaim>();
             AspNetRoles = new List<AspNetRole>();
             AspNetUserLogins = new List<AspNetUserLogin>();
+            Followers = new List<Following>();
+            Followees = new List<Following>();
         }
     }
+
+
 }

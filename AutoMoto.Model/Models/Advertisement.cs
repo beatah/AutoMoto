@@ -12,12 +12,13 @@ namespace AutoMoto.Models
         public DateTime AddedDate { get; set; }
         public string Description { get; set; }
         public AspNetUser User { get; set; }
+        public string UserId { get; set; }
         public ICollection<Photo> Photos { get; set; }
-        public Address Address { get; set; }
-        public int AddressId { get; set; }
         public bool IsActive { get; set; }
         public Car Car { get; set; }
         public int CarId { get; set; }
+
+
 
     }
 }

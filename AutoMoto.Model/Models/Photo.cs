@@ -6,6 +6,6 @@ namespace AutoMoto.Models
     {
         public int Id { get; set; }
         public byte[] Content { get; set; }
-        public Extensions Extension { get; set; }
+        public string Extension { get; set; }
     }
 }

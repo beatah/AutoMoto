@@ -1,12 +1,9 @@
 using AutoMoto.Models;
-using System.Threading.Tasks;
+using Service.Pattern;
 
 namespace AutoMoto.Contracts.Interfaces
 {
-    public interface IManufacturerService
+    public interface IManufacturerService : IService<Manufacturer>
     {
-        void Insert(Manufacturer entity);
-        void Update(Manufacturer entity);
-        Task<bool> DeleteAsync(params object[] keyValues);
     }
 }

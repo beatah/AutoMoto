@@ -1,0 +1,47 @@
+﻿@model PagedList.IPagedList<AutoMoto.Models.Advertisement>
+@using PagedList.Mvc;
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+
+<div class="row">
+
+    <div class="col-lg-8">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var advertisement in Model)
+                {
+                    <tr>
+                        <td>@advertisement.Title</td>
+                        <td>
+                            @advertisement.Car.Price
+                        </td>
+                        <td>
+                            <a href="@Url.Action("Details",new {id=advertisement.Id})" class="btn btn-primary">
+                                <i class="fa fa-star"></i> Szczegóły
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            <div id='Paging' style="text-align:center">
+                Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber)
+                of @Model.PageCount
+
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -46,6 +46,10 @@
       <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.1\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -57,7 +61,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enums\SizeEnum.cs" />
     <Compile Include="Mappings\AspNetRoleMap.cs" />
     <Compile Include="Mappings\AspNetUserClaimMap.cs" />
     <Compile Include="Mappings\AspNetUserLoginMap.cs" />
@@ -66,7 +69,39 @@
     <Compile Include="Migrations\201610291745138_InitialMigration.Designer.cs">
       <DependentUpon>201610291745138_InitialMigration.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\PizzaDbMigrationConfiguration.cs" />
+    <Compile Include="Migrations\201610301316292_AddActiveFlagToManufacturer.cs" />
+    <Compile Include="Migrations\201610301316292_AddActiveFlagToManufacturer.Designer.cs">
+      <DependentUpon>201610301316292_AddActiveFlagToManufacturer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611061105596_ChangeInCar.cs" />
+    <Compile Include="Migrations\201611061105596_ChangeInCar.Designer.cs">
+      <DependentUpon>201611061105596_ChangeInCar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611061220418_OneAddressPerUser.cs" />
+    <Compile Include="Migrations\201611061220418_OneAddressPerUser.Designer.cs">
+      <DependentUpon>201611061220418_OneAddressPerUser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611201041278_AddFollowingModel.cs" />
+    <Compile Include="Migrations\201611201041278_AddFollowingModel.Designer.cs">
+      <DependentUpon>201611201041278_AddFollowingModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611201057194_changeinadv.cs" />
+    <Compile Include="Migrations\201611201057194_changeinadv.Designer.cs">
+      <DependentUpon>201611201057194_changeinadv.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611201105360_changeincar2.cs" />
+    <Compile Include="Migrations\201611201105360_changeincar2.Designer.cs">
+      <DependentUpon>201611201105360_changeincar2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611201149368_x.cs" />
+    <Compile Include="Migrations\201611201149368_x.Designer.cs">
+      <DependentUpon>201611201149368_x.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611201412588_x1.cs" />
+    <Compile Include="Migrations\201611201412588_x1.Designer.cs">
+      <DependentUpon>201611201412588_x1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\AutoDbMigrationConfiguration.cs" />
     <Compile Include="Models\Address.cs" />
     <Compile Include="Models\Advertisement.cs" />
     <Compile Include="Models\AspNetRole.cs" />
@@ -74,18 +109,16 @@
     <Compile Include="Models\AspNetUserClaim.cs" />
     <Compile Include="Models\AspNetUserLogin.cs" />
     <Compile Include="Models\Car.cs" />
-    <Compile Include="Models\Enums.cs" />
+    <Compile Include="Enums\FuelTypes.cs" />
     <Compile Include="Models\Following.cs" />
     <Compile Include="Models\FollowingNotification.cs" />
-    <Compile Include="Models\Ingredient.cs" />
     <Compile Include="Models\Manufacturer.cs" />
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\MessageNotification.cs" />
     <Compile Include="Models\Model.cs" />
     <Compile Include="Models\Notification.cs" />
     <Compile Include="Models\Photo.cs" />
-    <Compile Include="Models\Pizza.cs" />
-    <Compile Include="Models\PizzaDbContext.cs" />
+    <Compile Include="Models\AutoDbContext.cs" />
     <Compile Include="Models\Roles.cs" />
     <Compile Include="Models\UserNotification.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -108,6 +141,33 @@
     <EmbeddedResource Include="Migrations\201610291745138_InitialMigration.resx">
       <DependentUpon>201610291745138_InitialMigration.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610301316292_AddActiveFlagToManufacturer.resx">
+      <DependentUpon>201610301316292_AddActiveFlagToManufacturer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611061105596_ChangeInCar.resx">
+      <DependentUpon>201611061105596_ChangeInCar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611061220418_OneAddressPerUser.resx">
+      <DependentUpon>201611061220418_OneAddressPerUser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611201041278_AddFollowingModel.resx">
+      <DependentUpon>201611201041278_AddFollowingModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611201057194_changeinadv.resx">
+      <DependentUpon>201611201057194_changeinadv.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611201105360_changeincar2.resx">
+      <DependentUpon>201611201105360_changeincar2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611201149368_x.resx">
+      <DependentUpon>201611201149368_x.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611201412588_x1.resx">
+      <DependentUpon>201611201412588_x1.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Sql\Create_sp_SelectProjectsFromTwoYears.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

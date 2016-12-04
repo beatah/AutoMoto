@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNet.Identity;
+﻿using AutoMoto.Web.Models;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
 using Owin;
 using System;
-using AutoMoto.Web.Models;
 
 namespace AutoMoto.Web
 {

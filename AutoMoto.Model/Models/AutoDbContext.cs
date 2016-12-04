@@ -6,13 +6,13 @@ using System.Data.Entity;
 
 namespace AutoMoto.Model.Models
 {
-    public class PizzaDbContext : DataContext
+    public partial class AutoDbContext : DataContext
     {
-        static PizzaDbContext()
+        static AutoDbContext()
         {
-            Database.SetInitializer(new MigrateDatabaseToLatestVersion<PizzaDbContext, PizzaDbMigrationConfiguration>());
+            Database.SetInitializer(new MigrateDatabaseToLatestVersion<AutoDbContext, AutoDbMigrationConfiguration>());
         }
-        public PizzaDbContext() : base("Name=DefaultConnection")
+        public AutoDbContext() : base("Name=DefaultConnection")
         { }
 
 
@@ -21,12 +21,11 @@ namespace AutoMoto.Model.Models
         public DbSet<AspNetUserClaim> AspNetUserClaims { get; set; }
         public DbSet<AspNetUser> AspNetUsers { get; set; }
         public DbSet<AspNetUserLogin> AspNetUserLogins { get; set; }
-        public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Advertisement> Advertisements { get; set; }
         public DbSet<Address> Addresses { get; set; }
-        // public DbSet<Following> Followings { get; set; }
+        public DbSet<Following> Followings { get; set; }
         public DbSet<Photo> Photos { get; set; }
         public DbSet<AutoMoto.Models.Model> Modele { get; set; }
         public DbSet<Manufacturer> Manufacturers { get; set; }

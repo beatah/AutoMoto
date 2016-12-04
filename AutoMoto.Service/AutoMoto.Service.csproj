@@ -40,8 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdvertisementService.cs" />
+    <Compile Include="FollowingService.cs" />
     <Compile Include="ManufacturerService.cs" />
+    <Compile Include="ModelService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserNotificationService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AutoMoto.Contracts\AutoMoto.Contracts.csproj">

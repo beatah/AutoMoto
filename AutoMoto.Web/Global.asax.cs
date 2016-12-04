@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
+using AutoMoto.Web.App_Start;
+using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using AutoMoto.Web.App_Start;
 
 namespace AutoMoto.Web
 {
@@ -12,11 +13,11 @@ namespace AutoMoto.Web
         {
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            GlobalConfiguration.Configure(WebApiConfig.Register);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             AutofacConfig.Register();
             Mapper.Initialize(cfg => cfg.AddProfile<OrganizationProfile>());
-
         }
     }
 }

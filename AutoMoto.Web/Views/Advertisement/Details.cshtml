@@ -1,0 +1,62 @@
+﻿@model AutoMoto.Contracts.ViewModels.AdvertisementDetailsViewModel
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+
+<div class="row">
+    @if (User.Identity.IsAuthenticated)
+    {
+        if (Model.IsFollowing)
+        {
+            <button class="btn btn-info js-toggle-follow" data-user-id="@Model.UserId">Obserwowany</button>
+        }
+        else
+        {
+            <button class="btn btn-default js-toggle-follow" data-user-id="@Model.UserId">Obserwuj</button>
+        }
+    }
+    <div class="col-lg-8">
+        <div class="table-responsive">
+            <table class="table table-hover">
+
+                <tbody>
+
+                <tr>
+                    <td>@Html.DisplayNameFor(x => x.Title)</td>
+                    <td>@Html.DisplayFor(x => x.Title)</td>
+                </tr>
+                <tr>
+                    <td>@Html.DisplayNameFor(x => x.Description)</td>
+                    <td>@Html.DisplayFor(x => x.Description)</td>
+                </tr>
+                <tr>
+                    <td>@Html.DisplayNameFor(x => x.Mileage)</td>
+                    <td>@Html.DisplayFor(x => x.Mileage)</td>
+                </tr>
+                <tr>
+                    <td>@Html.DisplayNameFor(x => x.EngineCap)</td>
+                    <td>@Html.DisplayFor(x => x.EngineCap)</td>
+                </tr>
+                <tr>
+                    <td>@Html.DisplayNameFor(x => x.Price)</td>
+                    <td>@Html.DisplayFor(x => x.Price)</td>
+                </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+
+            AdvertisementDetailsController.init();
+        });
+    </script>
+}

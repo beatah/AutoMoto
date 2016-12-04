@@ -1,5 +1,5 @@
-﻿using System.Data.Entity.ModelConfiguration;
-using AutoMoto.Model.Models;
+﻿using AutoMoto.Model.Models;
+using System.Data.Entity.ModelConfiguration;
 
 namespace AutoMoto.Model.Mappings
 {
@@ -33,6 +33,8 @@ namespace AutoMoto.Model.Mappings
             HasRequired(t => t.AspNetUser)
                 .WithMany(t => t.AspNetUserLogins)
                 .HasForeignKey(d => d.UserId).WillCascadeOnDelete();
+
+
 
         }
     }

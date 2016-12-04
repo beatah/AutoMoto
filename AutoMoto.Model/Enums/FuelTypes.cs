@@ -1,4 +1,4 @@
-﻿namespace AutoMoto.Models
+﻿namespace AutoMoto.Enums
 {
     public enum FuelTypes
     {
@@ -8,19 +8,4 @@
         Elektryczny = 4,
         Hybryda = 5
     }
-
-
-    public enum Extensions
-    {
-        Jpg = 1,
-        Png = 2
-    }
-
-
-
-
-
-
-
-
 }

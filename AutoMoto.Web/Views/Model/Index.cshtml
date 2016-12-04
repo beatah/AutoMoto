@@ -1,0 +1,72 @@
+﻿@using AutoMoto.Contracts
+@model Dictionary<string, List<AutoMoto.Models.Model>>
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Lista Modeli</h1>
+    </div>
+
+</div>
+
+
+@foreach (var manufacturer in Model)
+{
+
+    <div class="row">
+
+        <div class="col-lg-5">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <i class="fa fa-car"></i> Marka: @manufacturer.Key
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    @*<div class="col-lg-8">*@
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nazwa</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var modelEntity in manufacturer.Value)
+                                {
+                                    <tr>
+                                        <td>@modelEntity.Name</td>
+
+                                        <td>
+                                            <div class="pull-right">
+                                                <a href="@Url.Action("Delete", "Model", new {id = modelEntity.Id})" class="btn btn-danger">
+                                                    <span class="fa fa-trash"></span> Usuń
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    @*</div>*@
+                </div>
+                <div class="panel-footer">
+                    <a href="@Url.Action("Create", "Model", new {manufacturer = manufacturer.Key})" class="btn btn-primary">
+                        <i class="fa fa-plus"></i> Dodaj model
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+}
+

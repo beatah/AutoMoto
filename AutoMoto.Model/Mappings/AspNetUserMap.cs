@@ -1,5 +1,5 @@
-﻿using System.Data.Entity.ModelConfiguration;
-using AutoMoto.Model.Models;
+﻿using AutoMoto.Model.Models;
+using System.Data.Entity.ModelConfiguration;
 
 namespace AutoMoto.Model.Mappings
 {
@@ -38,6 +38,14 @@ namespace AutoMoto.Model.Mappings
             Property(t => t.LockoutEnabled).HasColumnName("LockoutEnabled");
             Property(t => t.AccessFailedCount).HasColumnName("AccessFailedCount");
             Property(t => t.UserName).HasColumnName("UserName");
+
+            HasMany(u => u.Followers)
+    .WithRequired(f => f.Followee)
+    .WillCascadeOnDelete(false);
+
+            HasMany(u => u.Followees)
+                .WithRequired(f => f.Follower)
+                .WillCascadeOnDelete(false);
 
 
         }

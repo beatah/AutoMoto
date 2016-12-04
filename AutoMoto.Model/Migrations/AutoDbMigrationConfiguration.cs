@@ -3,17 +3,17 @@ using System.Data.Entity.Migrations;
 
 namespace AutoMoto.Model.Migrations
 {
-    public class PizzaDbMigrationConfiguration : DbMigrationsConfiguration<PizzaDbContext>
+    public class AutoDbMigrationConfiguration : DbMigrationsConfiguration<AutoDbContext>
     {
-        public PizzaDbMigrationConfiguration()
+        public AutoDbMigrationConfiguration()
         {
             AutomaticMigrationsEnabled = false;
             AutomaticMigrationDataLossAllowed = true;
-            ContextKey = "AutoMoto.Model.Models.PizzaDbContext";
+            ContextKey = "AutoMoto.Model.Models.AutoDbContext";
 
             TargetDatabase = new System.Data.Entity.Infrastructure.DbConnectionInfo("DefaultConnection");
         }
-        protected override void Seed(PizzaDbContext context)
+        protected override void Seed(AutoDbContext context)
         {
 
         }

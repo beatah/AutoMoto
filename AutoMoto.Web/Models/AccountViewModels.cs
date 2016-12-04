@@ -70,15 +70,37 @@ namespace AutoMoto.Web.Models
         public string Email { get; set; }
 
         [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        [StringLength(100, ErrorMessage = "Krótkie hasła łatwo odgadnąć. Spróbuj ponownie, używając co najmniej {2} znaków", MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
+        [Display(Name = "Hasło")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [Display(Name = "Potwierdź hasło")]
+        [Compare("Password", ErrorMessage = "Te hasła nie pasują do siebie. Spróbuj ponownie.")]
         public string ConfirmPassword { get; set; }
+
+        [Required]
+        [Display(Name = "Imię")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Nazwisko")]
+        public string LastName { get; set; }
+
+        [Required]
+        [Display(Name = "Adres")]
+        public string Street { get; set; }
+
+        [Required]
+        [Display(Name = "Miasto")]
+
+        public string City { get; set; }
+
+        [Required]
+        [Display(Name = "Kod pocztowy")]
+        public string ZipCode { get; set; }
+
     }
 
     public class ResetPasswordViewModel

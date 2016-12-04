@@ -1,6 +1,6 @@
-﻿using Repository.Pattern.Ef6;
+﻿using AutoMoto.Enums;
+using Repository.Pattern.Ef6;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AutoMoto.Models
 {
@@ -12,9 +12,11 @@ namespace AutoMoto.Models
         public int Mileage { get; set; }
         public Model Model { get; set; }
         public int ModelId { get; set; }
+        [Required]
         public Advertisement Advertisement { get; set; }
-        [Key, ForeignKey("Advertisement")]
-        public int AdvertisementId { get; set; }
+        public int Id { get; set; }
+
+        public int Year { get; set; }
 
     }
 }
