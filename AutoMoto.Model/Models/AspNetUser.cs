@@ -1,8 +1,9 @@
 using AutoMoto.Models;
+using Newtonsoft.Json;
 using Repository.Pattern.Ef6;
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AutoMoto.Model.Models
 {

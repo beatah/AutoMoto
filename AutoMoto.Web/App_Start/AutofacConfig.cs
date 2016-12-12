@@ -50,6 +50,8 @@ namespace AutoMoto.Web.App_Start
             builder.RegisterType<AdvertisementService>().As<IAdvertisementService>().InstancePerRequest();
             builder.RegisterType<UserNotificationService>().As<IUserNotificationService>().InstancePerRequest();
             builder.RegisterType<FollowingService>().As<IFollowingService>().InstancePerRequest();
+            builder.RegisterType<MessageService>().As<IMessageService>().InstancePerRequest();
+            builder.RegisterType<AddressService>().As<IAddressService>().InstancePerRequest();
 
 
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());

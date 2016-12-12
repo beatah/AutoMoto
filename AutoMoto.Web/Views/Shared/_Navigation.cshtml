@@ -1,0 +1,71 @@
+﻿@{
+    Layout = null;
+}
+
+
+
+
+<section class="sidebar"  style="margin-top: 100px;">
+    <ul class="sidebar-menu">
+        @if (!User.Identity.IsAuthenticated)
+            {
+            <li class="">
+                <a href="@Url.Action("Login", "Account")">
+                    <i class="glyphicon glyphicon-user"></i> <span>Zaloguj się</span>
+                </a>
+            </li>
+                <li class="">
+                    <a href="@Url.Action("Register", "Account")">
+                        <i class="glyphicon glyphicon-user"></i> <span>Utwórz konto</span>
+                    </a>
+                </li>
+
+                <li class="">
+                    <a href="@Url.Action("Index", "Advertisement")">
+                        <i class="glyphicon glyphicon-th"></i> <span>Ogłoszenia</span>
+                    </a>
+                    <a href="@Url.Action("Create", "Advertisement")">
+                        <i class="glyphicon glyphicon-plus"></i> <span>Dodaj ogłoszenie</span>
+                    </a>
+                </li>
+        }
+        else
+        {
+            <li class="">
+                <a href="@Url.Action("Index", "Advertisement")">
+                    <i class="glyphicon glyphicon-th"></i> <span>Ogłoszenia</span>
+                </a>
+                <a href="@Url.Action("Messages", "Manage")">
+                    <i class="glyphicon glyphicon-envelope"></i> <span>Wiadomości</span>
+                </a>
+                <a href="@Url.Action("Mine", "Advertisement")">
+                    <i class="glyphicon glyphicon-list"></i> <span>Moje ogłoszenia</span>
+                </a>
+            </li>
+
+            <li class="">
+                <a href="@Url.Action("Create", "Advertisement")">
+                    <i class="glyphicon glyphicon-plus"></i> <span>Dodaj ogłoszenie</span>
+                </a>
+            </li>
+
+            if (User.IsInRole("Administrator"))
+            {
+                <li>
+                    <a target="_blank" href="@Url.Action("Index", "Admin")">
+                        <i class="glyphicon glyphicon-lock"></i> <span> Panel Administracyjny</span>
+                    </a>
+                </li>
+            }
+        }
+        @*<li class="divider"><i class="fa fa-th-list"></i> PLACEHOLDER</li>*@
+
+        <li class="divider"></li>
+
+        <li>
+            <footer class="copyright">
+                &copy; @DateTime.Now.Year - <a href="#">Beata Hryniewicka</a>
+            </footer>
+        </li>
+    </ul>
+</section>

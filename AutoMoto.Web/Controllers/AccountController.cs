@@ -1,8 +1,10 @@
-﻿using AutoMoto.Models;
+﻿using AutoMoto.Contracts.Interfaces;
+using AutoMoto.Models;
 using AutoMoto.Web.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
+using Repository.Pattern.UnitOfWork;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -15,15 +17,19 @@ namespace AutoMoto.Web.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
-        public AccountController()
+        private IAddressService _addressService;
+        private IUnitOfWorkAsync _unitOfWorkAsync;
+        public AccountController(IAddressService addressService, IUnitOfWorkAsync unitOfWorkAsync)
         {
+            _addressService = addressService;
+            _unitOfWorkAsync = unitOfWorkAsync;
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
-        {
-            UserManager = userManager;
-            SignInManager = signInManager;
-        }
+        //public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
+        //{
+        //    UserManager = userManager;
+        //    SignInManager = signInManager;
+        //}
 
         public ApplicationSignInManager SignInManager
         {
@@ -146,20 +152,26 @@ namespace AutoMoto.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
+            var address = new Address() { City = model.City, Street = model.Street, ZipCode = model.ZipCode };
+            _addressService.Insert(address);
+            await _unitOfWorkAsync.SaveChangesAsync();
+            ;
+
             if (ModelState.IsValid)
             {
-                var address = new Address() { City = model.City, Street = model.Street, ZipCode = model.ZipCode };
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email,/* FirstName = model.FirstName, LastName = model.LastName, Address = address */};
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    AddressId = address.Id,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName
+                };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
 
-                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
-                    // Send an email with this link
-                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
 
                     return RedirectToAction("Index", "Home");
                 }

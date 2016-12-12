@@ -31,12 +31,16 @@ namespace AutoMoto.Web.Controllers.API
         public async Task<IHttpActionResult> MarkAsRead()
         {
             var userId = User.Identity.GetUserId();
-            var notifications = _userNotificationService.Queryable().Where(x => x.UserId == userId).ToList();
+            var notifications = _userNotificationService.Queryable().Where(x => x.UserId == userId).Include(x => x.Notification).ToList();
 
             foreach (var userNotification in notifications)
             {
-                userNotification.IsRead = true;
-                _userNotificationService.Update(userNotification);
+                if (userNotification.Notification is FollowingNotification)
+                {
+                    userNotification.IsRead = true;
+                    _userNotificationService.Update(userNotification);
+                }
+
             }
 
             await _unitOfWork.SaveChangesAsync();

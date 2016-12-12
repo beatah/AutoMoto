@@ -11,6 +11,8 @@ namespace AutoMoto.Web.App_Start
         {
             CreateMap<Manufacturer, ManufacturerViewModel>();
             CreateMap<Advertisement, AdvertisementDetailsViewModel>();
+            CreateMap<Advertisement, AdvertisementViewModel>();
+            CreateMap<Car, AdvertisementViewModel>();
             CreateMap<Notification, NotificationDto>();
             Mapper.Initialize(cfg =>
             {

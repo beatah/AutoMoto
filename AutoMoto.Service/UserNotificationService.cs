@@ -15,5 +15,7 @@ namespace AutoMoto.Service
         {
             return Queryable().Where(x => x.IsRead == false && x.UserId == userId);
         }
+
+
     }
 }

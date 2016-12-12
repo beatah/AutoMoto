@@ -1,62 +1,237 @@
-﻿@model AutoMoto.Contracts.ViewModels.AdvertisementDetailsViewModel
+﻿
+
+
+@using System.Web.Mvc.Html
+@using AutoMoto.Contracts
+@using Microsoft.AspNet.Identity
+@using Roles = AutoMoto.Model.Models.Roles
+@model AutoMoto.Contracts.ViewModels.AdvertisementItemViewModel
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = Model.AdvertisementCurrent.Title;
 }
 
-<h2>Details</h2>
 
 
-<div class="row">
-    @if (User.Identity.IsAuthenticated)
-    {
-        if (Model.IsFollowing)
-        {
-            <button class="btn btn-info js-toggle-follow" data-user-id="@Model.UserId">Obserwowany</button>
-        }
-        else
-        {
-            <button class="btn btn-default js-toggle-follow" data-user-id="@Model.UserId">Obserwuj</button>
-        }
-    }
-    <div class="col-lg-8">
-        <div class="table-responsive">
-            <table class="table table-hover">
+<div class="body-content">
+    <div class="main-section">
+        @Html.Partial("_ContactForm", Model)
+        <div class="row">
+            <div class="container-fluid">
+                <div class="row">
 
-                <tbody>
+                    @if (TempData[TempKeys.UserMessage] != null)
+                    {
+                        var alertState = "bg-success";
+                        var icon = "fa-check";
 
-                <tr>
-                    <td>@Html.DisplayNameFor(x => x.Title)</td>
-                    <td>@Html.DisplayFor(x => x.Title)</td>
-                </tr>
-                <tr>
-                    <td>@Html.DisplayNameFor(x => x.Description)</td>
-                    <td>@Html.DisplayFor(x => x.Description)</td>
-                </tr>
-                <tr>
-                    <td>@Html.DisplayNameFor(x => x.Mileage)</td>
-                    <td>@Html.DisplayFor(x => x.Mileage)</td>
-                </tr>
-                <tr>
-                    <td>@Html.DisplayNameFor(x => x.EngineCap)</td>
-                    <td>@Html.DisplayFor(x => x.EngineCap)</td>
-                </tr>
-                <tr>
-                    <td>@Html.DisplayNameFor(x => x.Price)</td>
-                    <td>@Html.DisplayFor(x => x.Price)</td>
-                </tr>
-                }
-                </tbody>
-            </table>
+                        if (TempData[TempKeys.UserMessageAlertState] != null)
+                        {
+                            alertState = "bg-danger";
+                            icon = "fa-exclamation-circle";
+                        }
+
+                        <div class="alert @alertState">
+                            <p><i class="fa @icon"></i> @TempData[TempKeys.UserMessage]</p>
+                        </div>
+                    }
+
+                    <div class="col-md-8 col-xs-12">
+                        <div class="section panel-header">
+                            <div class="col-md-12">
+                                <h3>
+                                    @Model.AdvertisementCurrent.Title
+                                    <div class="pull-right">
+                                        @if (Model.AdvertisementCurrent.UserId == User.Identity.GetUserId() || User.IsInRole(Roles.Admin))
+                                        {
+                                            <a class="btn btn-danger" href="#" onclick="confirmDelete(@Model.AdvertisementCurrent.Id, '@Model.AdvertisementCurrent.Title');"><i class="glyphicon glyphicon-trash"></i> Usuń</a>
+                                        }
+                                    </div>
+                                </h3>
+
+                                <h4>
+                                    @Html.DisplayFor(x => x.AdvertisementCurrent.Car.Price) zł
+                                </h4>
+                                <p class="lead text-lighten">
+                                    @Model.AdvertisementCurrent.User.Address.City
+                                </p>
+                            </div>
+                        </div>
+                        <div class="panel-header bdr-b container-fluid">
+                            <ul class="nav nav-tabs" role="tablist" id="mainTab">
+                                <li role="presentation" class="active"><a href="#description" aria-controls="description" role="tab" data-toggle="tab"><i class="fa fa-info"></i>Opis</a></li>
+                                <li role="presentation">
+                                    <a id="contactModal" data-toggle="modal" data-target="#contactModal"><i class="fa fa-envelope"></i>Kontakt</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane fade active in" id="description">
+                                <div class="panel panel-default bdr-t-none">
+                                    <div class="panel-body">
+                                        <pre style="font-family: 'Questrial', sans-serif;color: #50505f;">@Model.AdvertisementCurrent.Description </pre>
+
+                                    </div>
+                                    <div class="panel-heading bdr-t">
+                                        <i class="fa fa-picture-o"></i> Zdjęcia
+                                    </div>
+                                    <div class="panel-body">
+                                        @if (Model.Pictures.Count > 0)
+                                        {
+                                            <div id="carousel-gallery" class="carousel slide" data-ride="carousel">
+                                                <ol class="carousel-indicators">
+                                                    @for (int i = 0; i < Model.Pictures.Count; i++)
+                                                    {
+                                                        <li data-target="#carousel-gallery" data-slide-to="@i"></li>
+                                                    }
+                                                </ol>
+                                                <div class="carousel-inner" role="listbox">
+                                                    @for (int i = 0; i < Model.Pictures.Count; i++)
+                                                    {
+                                                        <div class="item @(i == 0 ? "active" : "")">
+                                                            <img style=" margin-left: auto; margin-right: auto;" alt="" src="@Model.Pictures[i].Url" data-holder-rendered="true">
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <a class="left carousel-control" href="#carousel-gallery" role="button" data-slide="prev">
+                                                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                                                    <span class="sr-only">Poprzednie</span>
+                                                </a>
+                                                <a class="right carousel-control" href="#carousel-gallery" role="button" data-slide="next">
+                                                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                                                    <span class="sr-only">Następne</span>
+                                                </a>
+                                            </div>
+
+                                        }
+
+                                    </div>
+                                    <table class="table">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    Marka
+                                                </td>
+                                                <td>
+                                                    @Model.AdvertisementCurrent.Car.Model.Manufacturer.Name
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>
+                                                    Cena
+                                                </td>
+                                                <td>
+                                                    @Model.AdvertisementCurrent.Car.Price
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>
+                                                    Pojemność silnika
+                                                </td>
+                                                <td>@Html.DisplayFor(x => x.AdvertisementCurrent.Car.EngineCap)</td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    Miasto
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(x => Model.AdvertisementCurrent.User.Address.City)
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    Dodano
+                                                </td>
+                                                <td>
+                                                    @Model.AdvertisementCurrent.AddedDate.ToShortDateString()
+                                                </td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="col-md-4 col-xs-12">
+                            <div id="sidebar" data-spy="affix" data-offset-top="120" class="affix text-center">
+                                <div class="panel panel-default panel-body mrg-t text-center">
+                                    <a href="@Url.Action("Profile", "Advertisement", new { id = Model.User.Id })">
+                                        <img class="img-circle profile-picture" src="http://www.gravatar.com/avatar/?d=mm"/>
+                                        <h5>@Model.User.FirstName @Model.User.LastName</h5>
+                                        </a>
+                                  
+                                    @if (User.Identity.IsAuthenticated)
+                                    {
+
+                                        if (Model.IsFollowing)
+                                        {
+                                            <button class="btn btn-info js-toggle-follow btn-block" data-user-id="@Model.AdvertisementCurrent.UserId">Obserwowany</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-primary js-toggle-follow btn-block" data-user-id="@Model.AdvertisementCurrent.UserId">Obserwuj</button>
+                                        }
+                                    }
+                                    <a id="contactModal" data-toggle="modal" data-target="#contactModal" class="btn btn-default btn-block">Kontakt</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
+
 @section scripts
 {
+    @Scripts.Render("/Scripts/bootbox.min.js")
     <script>
-        $(document).ready(function () {
+        function confirmDelete(id, title) {
+            var url = '@Url.Action("Delete", "Advertisement")';
+            bootbox.dialog({
 
-            AdvertisementDetailsController.init();
-        });
+                title: "Usuwanie",
+                message: "Czy na pewno chcesz usunąć ogłoszenie "+title+" ?",
+                buttons: {
+                    danger: {
+                        label: "Usuń",
+                        className: "btn-danger",
+                        callback: function() {
+                            $.ajax({
+                                url: url,
+                                data:  {id:id},
+                                method: "POST"
+                            })
+                                .done(function() {
+                                    var url = '@Url.Action("Index", "Home")';
+                                    window.location.href = url;
+                                });
+                        }
+                    },
+                    no: {
+                        label: "Anuluj",
+                        className: "btn-default"
+                    }
+                }
+
+            });
+        }
+
+
+        $(document)
+            .ready(function() {
+                $(".js-delete")
+                    .click(function(e) {
+                        var link = $(e.target);
+
+
+                    });
+                AdvertisementDetailsController.init();
+            });
     </script>
 }

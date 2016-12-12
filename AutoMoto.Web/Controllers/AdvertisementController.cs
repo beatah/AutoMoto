@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using AutoMoto.Contracts;
+using AutoMoto.Contracts.Dtos;
 using AutoMoto.Contracts.Interfaces;
 using AutoMoto.Contracts.ViewModels;
 using AutoMoto.Models;
@@ -9,6 +10,7 @@ using Repository.Pattern.UnitOfWork;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -22,39 +24,125 @@ namespace AutoMoto.Web.Controllers
         private readonly IAdvertisementService _advertisementService;
         private readonly IFollowingService _followingService;
         private readonly IUserNotificationService _userNotificationService;
+        private readonly IMessageService _messageService;
         private readonly IUnitOfWorkAsync _unitOfWorkAsync;
 
-        public AdvertisementController(IManufacturerService manufacturerService, IModelService modelService, IUnitOfWorkAsync unitOfWorkAsync, IAdvertisementService advertisementService, IUserNotificationService userNotificationService, IFollowingService followingService)
+        public AdvertisementController(IMessageService messageService, IManufacturerService manufacturerService, IModelService modelService, IUnitOfWorkAsync unitOfWorkAsync, IAdvertisementService advertisementService, IUserNotificationService userNotificationService, IFollowingService followingService)
         {
             _manufacturerService = manufacturerService;
             _modelService = modelService;
             _advertisementService = advertisementService;
             _followingService = followingService;
             _userNotificationService = userNotificationService;
+            _messageService = messageService;
             _unitOfWorkAsync = unitOfWorkAsync;
         }
 
-
-
-        public ActionResult Index(int? page)
+        public async Task<ActionResult> ContactUser(ContactDto model)
         {
-            int pageSize = 2;
-            int pageIndex = 1;
-            pageIndex = page.HasValue ? Convert.ToInt32(page) : 1;
-            var advertisements =
-                _advertisementService.Queryable().Include(x => x.Car.Model.Manufacturer).Include(x => x.Photos).OrderByDescending(x => x.AddedDate).ToPagedList(pageIndex, pageSize); ;
+            var advertisement = await _advertisementService.FindAsync(model.AdvertisementId);
 
-            return View(advertisements);
+            var userIdCurrent = User.Identity.GetUserId();
+
+
+
+            if (advertisement.UserId == userIdCurrent)
+            {
+                TempData[TempKeys.UserMessageAlertState] = "bg-danger";
+                TempData[TempKeys.UserMessage] = "Nie możesz wysłać wiadomości do siebie!";
+                return RedirectToAction("Details", "Advertisement", new { id = model.AdvertisementId });
+            }
+
+
+            var message = new Message()
+            {
+                FromUserId = userIdCurrent,
+                ToUserId = advertisement.UserId,
+                Content = model.Message,
+                AdvertisementId = advertisement.Id
+            };
+
+            _messageService.Insert(message);
+            var messageNotification = new MessageNotification() { Message = message, DateTime = DateTime.Now, ObjectState = ObjectState.Added };
+
+            var userNotification = new UserNotification()
+            {
+
+                IsRead = false,
+                Notification = messageNotification,
+                UserId = message.ToUserId,
+                ObjectState = ObjectState.Added
+            };
+            _userNotificationService.Insert(userNotification);
+
+
+            await _unitOfWorkAsync.SaveChangesAsync();
+
+
+            TempData[TempKeys.UserMessage] = "Wiadomość wysłana!";
+
+            return RedirectToAction("Details", "Advertisement", new { id = model.AdvertisementId });
         }
+
+
+        public async Task<ActionResult> Index(SearchModel model)
+        {
+            await GetSearchResult(model);
+
+            return View("~/Views/Advertisement/Index.cshtml", model);
+
+        }
+        public async Task<ActionResult> Mine()
+        {
+            var userId = User.Identity.GetUserId();
+            var items = await _advertisementService.Query(x => x.UserId == userId)
+                        .Include(x => x.Car)
+                        .Include(x => x.Car.Model)
+                        .Include(x => x.Car.Model.Manufacturer)
+                        .Include(x => x.User)
+                        .Include(x => x.Photos)
+                        .Include(x => x.User.Address)
+                        .SelectAsync();
+            var itemsModelList = new List<ListingItemModel>();
+            foreach (var item in items.Where(x => x.IsActive).OrderByDescending(x => x.AddedDate))
+            {
+                itemsModelList.Add(new ListingItemModel()
+                {
+                    ListingCurrent = item,
+                    UrlPicture = item.Photos.Count == 0 ? "" : string.Format("data:{0};base64,{1}", item.Photos.First().Extension, Convert.ToBase64String(item.Photos.First().Content))
+                });
+            }
+            SearchModel model = new SearchModel();
+            model.Advertisements = itemsModelList;
+            model.ListingsPageList = itemsModelList.ToPagedList(model.PageNumber, model.PageSize);
+
+            return View("~/Views/Advertisement/Mine.cshtml", model);
+
+        }
+
 
         public ActionResult Details(int id)
         {
-            var advertisement = _advertisementService.Queryable().Include(x => x.Car).First(x => x.Id == id);
-            var viewModel = Mapper.Map<Advertisement, AdvertisementDetailsViewModel>(advertisement);
+            var advertisement = _advertisementService.Queryable().Include(x => x.Car.Model.Manufacturer).Include(x => x.User.Address).Include(x => x.Photos).First(x => x.Id == id);
+            var viewModel = new AdvertisementItemViewModel();
+            viewModel.AdvertisementCurrent = advertisement;
+            viewModel.User = advertisement.User;
+
+            var picturesModel = advertisement.Photos.Select(x =>
+               new PictureModel()
+               {
+                   ID = x.Id,
+                   Url = string.Format("data:{0};base64,{1}", x.Extension, Convert.ToBase64String(x.Content)),
+                   AdvertisementId = advertisement.Id
+
+               }).ToList();
+            viewModel.Pictures = picturesModel;
+            viewModel.UrlPicture = picturesModel.FirstOrDefault().Url;
+
             if (User.Identity.IsAuthenticated)
             {
-                var userId = User.Identity.GetUserId();
-                viewModel.IsFollowing = _followingService.GetFollowing(userId, advertisement.UserId) != null;
+                viewModel.UserId = User.Identity.GetUserId();
+                viewModel.IsFollowing = _followingService.GetFollowing(viewModel.UserId, advertisement.UserId) != null;
             }
 
             return View(viewModel);
@@ -71,9 +159,15 @@ namespace AutoMoto.Web.Controllers
         [HttpPost]
         public async Task<ActionResult> Create(AdvertisementViewModel viewModel)
         {
-            if (!ModelState.IsValid || viewModel.PhotoFiles == null)
+            if (!ModelState.IsValid || viewModel.PhotoFiles == null || viewModel.PhotoFiles.First() == null)
             {
                 viewModel.Manufacturers = _manufacturerService.Queryable().ToList();
+                if (viewModel.PhotoFiles == null || viewModel.PhotoFiles.First() == null)
+                {
+                    TempData[TempKeys.UserMessageAlertState] = "bg-danger";
+                    TempData[TempKeys.UserMessage] = "Zdjęcia w ogłoszeniu są wymagane!";
+
+                }
                 return View("Form", viewModel);
             }
             var userId = User.Identity.GetUserId();
@@ -128,7 +222,7 @@ namespace AutoMoto.Web.Controllers
             }
 
             await _unitOfWorkAsync.SaveChangesAsync();
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Details", "Advertisement", new { id = advertisement.Id });
 
         }
         public JsonResult FillModels(int manufacturer)
@@ -137,6 +231,125 @@ namespace AutoMoto.Web.Controllers
                 _modelService.Queryable().Where(x => x.ManufacturerId == manufacturer).ToList();
             return Json(models, JsonRequestBehavior.AllowGet);
         }
+        private async Task GetSearchResult(SearchModel model)
+        {
+            IEnumerable<Advertisement> items = null;
 
+            // Category
+            if (model.ManufacturerId != 0)
+            {
+
+                if (model.ModelId != 0)
+                {
+                    items = await _advertisementService.Query(x => x.Car.Model.Id == model.ModelId)
+                        .Include(x => x.Car)
+                        .Include(x => x.Car.Model)
+                        .Include(x => x.Car.Model.Manufacturer)
+                        .Include(x => x.User)
+                        .Include(x => x.Photos)
+                        .Include(x => x.User.Address)
+                        .SelectAsync();
+                }
+                else
+                {
+                    items = await _advertisementService.Query(x => x.Car.Model.ManufacturerId == model.ManufacturerId)
+                  .Include(x => x.Car)
+                  .Include(x => x.Car.Model)
+                  .Include(x => x.Car.Model.Manufacturer)
+                  .Include(x => x.User)
+                                      .Include(x => x.Photos)
+                  .Include(x => x.User.Address)
+                  .SelectAsync();
+                }
+                model.Models = _modelService.Queryable().Where(x => x.ManufacturerId == model.ManufacturerId).ToList();
+
+
+            }
+
+
+
+            // Latest
+            if (items == null)
+            {
+                items = await _advertisementService.Query().OrderBy(x => x.OrderByDescending(y => y.AddedDate))
+                    .Include(x => x.Car)
+                    .Include(x => x.Car.Model)
+                    .Include(x => x.Car.Model.Manufacturer)
+                    .Include(x => x.User)
+                    .Include(x => x.Photos)
+                                        .Include(x => x.User.Address)
+                    .SelectAsync();
+            }
+
+
+            // Location
+            if (!string.IsNullOrEmpty(model.Location))
+            {
+                items = items.Where(x => !string.IsNullOrEmpty(x.User.Address.City) && string.Compare(x.User.Address.City.ToLower(), model.Location.ToLower(), CultureInfo.InvariantCulture, CompareOptions.IgnoreNonSpace) == 0);
+            }
+
+
+            if (model.PriceFrom.HasValue)
+                items = items.Where(x => x.Car.Price >= model.PriceFrom.Value);
+
+            if (model.PriceTo.HasValue)
+                items = items.Where(x => x.Car.Price <= model.PriceTo.Value);
+
+
+            var itemsModelList = new List<ListingItemModel>();
+            foreach (var item in items.Where(x => x.IsActive).OrderByDescending(x => x.AddedDate))
+            {
+                itemsModelList.Add(new ListingItemModel()
+                {
+                    ListingCurrent = item,
+                    UrlPicture = item.Photos.Count == 0 ? "" : string.Format("data:{0};base64,{1}", item.Photos.First().Extension, Convert.ToBase64String(item.Photos.First().Content))
+                });
+            }
+
+            model.Manufacturers = _manufacturerService.Queryable().ToList();
+
+            model.Advertisements = itemsModelList;
+            model.ListingsPageList = itemsModelList.ToPagedList(model.PageNumber, model.PageSize);
+
+        }
+
+        public async Task<ActionResult> Profile(string id)
+        {
+
+            var items = await _advertisementService.Query(x => x.UserId == id)
+                        .Include(x => x.Car)
+                        .Include(x => x.Car.Model)
+                        .Include(x => x.Car.Model.Manufacturer)
+                        .Include(x => x.User)
+                        .Include(x => x.Photos)
+                        .Include(x => x.User.Address)
+                        .SelectAsync();
+            var itemsModelList = new List<ListingItemModel>();
+            foreach (var item in items.Where(x => x.IsActive).OrderByDescending(x => x.AddedDate))
+            {
+                itemsModelList.Add(new ListingItemModel()
+                {
+                    ListingCurrent = item,
+                    UrlPicture = item.Photos.Count == 0 ? "" : string.Format("data:{0};base64,{1}", item.Photos.First().Extension, Convert.ToBase64String(item.Photos.First().Content))
+                });
+            }
+            SearchModel model = new SearchModel();
+            model.Advertisements = itemsModelList;
+            model.ListingsPageList = itemsModelList.ToPagedList(model.PageNumber, model.PageSize);
+
+            return View("~/Views/Advertisement/Profile.cshtml", model);
+        }
+        [HttpPost]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var advertisement = await _advertisementService.FindAsync(id);
+            advertisement.IsActive = false;
+            advertisement.ObjectState = ObjectState.Modified;
+
+            await _unitOfWorkAsync.SaveChangesAsync();
+
+
+            return RedirectToAction("Index");
+        }
     }
 }

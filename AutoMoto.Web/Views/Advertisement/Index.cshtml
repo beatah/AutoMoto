@@ -1,47 +1,98 @@
-﻿@model PagedList.IPagedList<AutoMoto.Models.Advertisement>
+﻿
+@using AutoMoto.Contracts
 @using PagedList.Mvc;
+@model AutoMoto.Contracts.ViewModels.SearchModel
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Ogłoszenia";
+}
+@section Styles {
+    <link href="~/Content/PagedList.css" rel="stylesheet" />
 }
 
-<h2>Index</h2>
+<div class="container-fluid body-content">
 
+    <div class="mrg-tb">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="search-widget panel panel-default">
+                    <form method="get" action="@Url.Action("Index", "Advertisement", new { })">
+                        <div class="panel-heading">
+                            Wyszukaj
+                        </div>
+                        <div class="panel-body">
+                            <fieldset>
+                                <div class="form-group">
+                                    <label>Marka</label>
+                                    @Html.DropDownListFor(m => m.ManufacturerId, new SelectList(Model.Manufacturers, "Id", "Name", Model.ManufacturerId), "Marki", new { @class = "form-control", onchange = "this.form.submit()" })
+                                </div>
+                                <div class="form-group">
+                                    <label>Model</label>
+                                    @if (Model.ManufacturerId == 0)
+                                    {
+                                        @Html.DropDownListFor(m => m.ModelId, new SelectList(Enumerable.Empty<SelectListItem>(), "Id", "Name"), "Modele", new { @class = "form-control", disabled = true })
 
-<div class="row">
+                                    }
+                                    else
+                                    {
+                                        @Html.DropDownListFor(m => m.ModelId, new SelectList(Model.Models, "Id", "Name", Model.ModelId), "Modele", new { @class = "form-control", onchange = "this.form.submit()" })
 
-    <div class="col-lg-8">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                <tr>
+                                    }
+                                </div>
+                                <div class="form-group">
+                                    <label>Miasto</label>
+                                    <input type="text" class="form-control" placeholder="Miasto" id="Location" name="Location" value="@Model.Location">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cena</label>
+                                    <div class="row">
+                                        <div class="col-xs-6 range-from"><input type="number" class="form-control" placeholder="Min" id="PriceFrom" name="PriceFrom" value="@Model.PriceFrom"></div>
+                                        <div class="col-xs-6 range-to"><input type="number" class="form-control" placeholder="Max" id="PriceTo" name="PriceTo" value="@Model.PriceTo"></div>
+                                    </div>
+                                </div>
+                                @*<div class="form-group">
+                                    <label>[[[Search Text]]]</label>
+                                    <input type="search" class="form-control" placeholder="[[[Search text]]]" id="SearchText" name="SearchText" value="@Model.SearchText">
+                                </div>*@
+                                @*<input type="checkbox" id="PhotoOnly" name="PhotoOnly" value="true" @( Model.PhotoOnly ? "checked" : "") />*@
+                                @*<label for="PhotoOnly">[[[Only show listings with photos]]]</label>*@
+                            </fieldset>
+                        </div>
+                        <div class="panel-footer">
+                            <button type="submit" class="btn btn-sm btn-primary" href="">Szukaj</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-9 section-title">
+                <div class="row">
+                    <div class="col-md-12">
 
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach (var advertisement in Model)
-                {
-                    <tr>
-                        <td>@advertisement.Title</td>
-                        <td>
-                            @advertisement.Car.Price
-                        </td>
-                        <td>
-                            <a href="@Url.Action("Details",new {id=advertisement.Id})" class="btn btn-primary">
-                                <i class="fa fa-star"></i> Szczegóły
-                            </a>
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-            <div id='Paging' style="text-align:center">
-                Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber)
-                of @Model.PageCount
-
-                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+                        <h4>
+                           Ogłoszenia
+                        </h4>
+                    </div>
+                </div>
+                <div class="row m-b-10">
+                    @Html.Partial("~/Views/Advertisement/_Grid.cshtml", Model)
+                </div>
+                <div class="panel-header bdr-b">
+                    <div class="container-fluid">
+                        <div class=" col-md-12">
+                            <h5 class="pull-left mrg-t">
+                                @string.Format("Strona {0} z {1}", Model.ListingsPageList.PageCount < Model.PageNumber ? 0 : Model.PageNumber, Model.ListingsPageList.PageCount)
+                            </h5>
+                            @Html.PagedListPager(Model.ListingsPageList, (page) => { return Request.UrlReplace("PageNumber", page.ToString()); },
+                            new PagedListRenderOptions
+                            {
+                                ContainerDivClasses = new List<string>(new string[] { "pull-right" }),
+                                DisplayPageCountAndCurrentLocation = false,
+                                MaximumPageNumbersToDisplay = 5,
+                                DisplayEllipsesWhenNotShowingAllPageNumbers = false
+                            })
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-

@@ -1,12 +1,20 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Mvc;
+﻿using AutoMoto.Contracts;
+using AutoMoto.Contracts.Interfaces;
+using AutoMoto.Contracts.ViewModels;
+using AutoMoto.Models;
 using AutoMoto.Web.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
+using PagedList;
+using Repository.Pattern.Infrastructure;
+using Repository.Pattern.UnitOfWork;
+using System;
+using System.Data.Entity;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Mvc;
 
 namespace AutoMoto.Web.Controllers
 {
@@ -15,16 +23,21 @@ namespace AutoMoto.Web.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private IMessageService _messageService;
+        private IAddressService _addressService;
+        private IUserNotificationService _userNotificationService;
+        private IUnitOfWorkAsync _unitOfWorkAsync;
 
-        public ManageController()
+
+        public ManageController(IMessageService messageService, IUserNotificationService userNotificationService, IUnitOfWorkAsync unitOfWorkAsync, IAddressService addressService)
         {
+
+            _messageService = messageService;
+            _userNotificationService = userNotificationService;
+            _unitOfWorkAsync = unitOfWorkAsync;
+            _addressService = addressService;
         }
 
-        public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
-        {
-            UserManager = userManager;
-            SignInManager = signInManager;
-        }
 
         public ApplicationSignInManager SignInManager
         {
@@ -32,9 +45,9 @@ namespace AutoMoto.Web.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -48,6 +61,145 @@ namespace AutoMoto.Web.Controllers
             {
                 _userManager = value;
             }
+        }
+
+        public async Task<ActionResult> Messages(int? page)
+        {
+            int pageSize = 20;
+            int pageNumber = (page ?? 1);
+
+            var userId = User.Identity.GetUserId();
+            var messages = await _messageService.Query(x => x.FromUserId == userId || x.ToUserId == userId).Include(x => x.FromUser).Include(x => x.ToUser).Include(x => x.Advertisement).SelectAsync();
+            var messageEntities = messages.ToList();
+
+            var threads = messageEntities.Select(x => x.Thread).Distinct().ToList();
+            var threadMessages = threads.Select(thread => messageEntities.Where(x => x.Thread == thread).OrderByDescending(x => x.Id).First()).ToList().OrderByDescending(x => x.Id);
+
+
+
+            var model = threadMessages.ToPagedList(pageNumber, pageSize);
+
+            return View(model);
+        }
+
+
+        public async Task<ActionResult> Message(int thread)
+        {
+            var userIdCurrent = User.Identity.GetUserId();
+
+            var messages =
+                await
+                    _messageService.Queryable()
+                        .Where(x => x.Thread == thread)
+                        .Include(x => x.Advertisement)
+                        .Include(x => x.Advertisement.Photos)
+                        .Include(x => x.Advertisement.Car)
+                        .Include(x => x.Advertisement.User.Address)
+                        .Include(x => x.FromUser)
+                        .Include(x => x.ToUser)
+                        .OrderByDescending(x => x.Id)
+                        .ToListAsync();
+
+
+
+            if (!messages.Any())
+                return RedirectToAction("Messages");
+
+            var viewModel = new MessageDetailsViewModel();
+            viewModel.Messages = messages;
+            if (messages.First().Advertisement.Photos.Any())
+            {
+                var picturesModel = messages.First().Advertisement.Photos.Select(x =>
+                    new PictureModel()
+                    {
+                        ID = x.Id,
+                        Url = string.Format("data:{0};base64,{1}", x.Extension, Convert.ToBase64String(x.Content)),
+                        AdvertisementId = messages.First().Advertisement.Id
+
+                    }).ToList();
+
+                viewModel.Url = picturesModel.FirstOrDefault().Url;
+            }
+
+
+            var messageNotifications = _userNotificationService.GetNewNotificationsFor(userIdCurrent).Select(x => x.Notification).OfType<MessageNotification>().Include(x => x.Message).ToList();
+
+            foreach (var messageNotification in messageNotifications)
+            {
+                foreach (var message in messages)
+                {
+                    if (message.Id == messageNotification.MessageId)
+                    {
+                        var markAsRead = await _userNotificationService.Query(x => x.NotificationId == messageNotification.Id).SelectAsync();
+                        foreach (var userNotification in markAsRead)
+                        {
+                            userNotification.IsRead = true;
+                            userNotification.ObjectState = ObjectState.Modified;
+
+                        }
+                    }
+                }
+            }
+
+
+            await _unitOfWorkAsync.SaveChangesAsync();
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Message(int thread, string messageText)
+        {
+            var userIdCurrent = User.Identity.GetUserId();
+
+            var messageFromThread = _messageService.Queryable().FirstOrDefault(x => x.Thread == thread);
+            string toUserId = "";
+
+
+            if (messageFromThread.FromUserId == userIdCurrent)
+            {
+                toUserId = messageFromThread.ToUserId;
+            }
+            else if (messageFromThread.ToUserId == userIdCurrent)
+            {
+                toUserId = messageFromThread.FromUserId;
+
+            }
+            else
+            {
+                return RedirectToAction("Messages");
+
+            }
+
+
+            var message = new Message()
+            {
+                Thread = thread,
+                FromUserId = userIdCurrent,
+                Content = messageText,
+                ObjectState = ObjectState.Added,
+                AdvertisementId = messageFromThread.AdvertisementId,
+                ToUserId = toUserId
+            };
+
+            _messageService.Insert(message);
+
+            var messageNotification = new MessageNotification() { Message = message, DateTime = DateTime.Now, ObjectState = ObjectState.Added };
+
+            var userNotification = new UserNotification()
+            {
+                IsRead = false,
+                Notification = messageNotification,
+                UserId = message.ToUserId,
+                ObjectState = ObjectState.Added
+            };
+            _userNotificationService.Insert(userNotification);
+
+            await _unitOfWorkAsync.SaveChangesAsync();
+
+            TempData[TempKeys.UserMessage] = "Wiadomość została wysłana";
+
+            return RedirectToAction("Message", new { thread = thread });
         }
 
         //
@@ -333,7 +485,7 @@ namespace AutoMoto.Web.Controllers
             base.Dispose(disposing);
         }
 
-#region Helpers
+        #region Helpers
         // Used for XSRF protection when adding external logins
         private const string XsrfKey = "XsrfId";
 
@@ -384,6 +536,6 @@ namespace AutoMoto.Web.Controllers
             Error
         }
 
-#endregion
+        #endregion
     }
 }

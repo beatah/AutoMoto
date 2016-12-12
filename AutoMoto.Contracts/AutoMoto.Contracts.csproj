@@ -43,6 +43,10 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="PagedList, Version=1.17.0.0, Culture=neutral, PublicKeyToken=abbb863e9397c5e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\PagedList.1.17.0.0\lib\net40\PagedList.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -79,6 +83,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dtos\ContactDto.cs" />
     <Compile Include="Dtos\FollowingDto.cs" />
     <Compile Include="Dtos\FollowingNotificationDto.cs" />
     <Compile Include="Dtos\NotificationDto.cs" />
@@ -86,14 +91,21 @@
     <Compile Include="Interfaces\IAdvertisementService.cs" />
     <Compile Include="Interfaces\IFollowingService.cs" />
     <Compile Include="Interfaces\IManufacturerService.cs" />
+    <Compile Include="Interfaces\IMessageService.cs" />
     <Compile Include="Interfaces\IModelService.cs" />
     <Compile Include="Interfaces\IUserNotificationService.cs" />
+    <Compile Include="Interfaces\IAddressService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TempKeys.cs" />
     <Compile Include="ViewModels\AdvertisementDetailsViewModel.cs" />
+    <Compile Include="ViewModels\AdvertisementItemViewModel.cs" />
     <Compile Include="ViewModels\AdvertisementViewModel.cs" />
     <Compile Include="ViewModels\ManufacturerFormViewModel.cs" />
     <Compile Include="ViewModels\ManufacturerViewModel.cs" />
+    <Compile Include="ViewModels\MessageDetailsViewModel.cs" />
+    <Compile Include="ViewModels\ModelFormViewModel.cs" />
     <Compile Include="ViewModels\ModelViewModel.cs" />
+    <Compile Include="ViewModels\SearchModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -1,6 +1,5 @@
 ﻿body {
-    padding-top: 50px;
-    padding-bottom: 20px;
+
 }
 
 /* Set padding to keep content from hitting the edges */
@@ -49,7 +48,7 @@ textarea {
   box-shadow: none;
   -webkit-box-shadow: none;
 }
-.navbar-inverse {
+/*.navbar-inverse {
   background-color:#337ab7;
   border-color:#337ab7;
 }
@@ -116,4 +115,4 @@ textarea {
     top: -12px;
     right: 14px;
     z-index: 9;
-}
+}*/

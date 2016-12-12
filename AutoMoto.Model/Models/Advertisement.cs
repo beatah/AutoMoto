@@ -16,7 +16,6 @@ namespace AutoMoto.Models
         public ICollection<Photo> Photos { get; set; }
         public bool IsActive { get; set; }
         public Car Car { get; set; }
-        public int CarId { get; set; }
 
 
 

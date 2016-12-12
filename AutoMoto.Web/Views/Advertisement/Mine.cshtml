@@ -1,0 +1,56 @@
+﻿
+@using AutoMoto.Contracts
+@using PagedList.Mvc;
+@model AutoMoto.Contracts.ViewModels.SearchModel
+@{
+    ViewBag.Title = "Ogłoszenia";
+}
+@section Styles {
+    <link href="~/Content/PagedList.css" rel="stylesheet" />
+}
+
+<div class="container-fluid body-content">
+
+    <div class="mrg-tb">
+        <div class="row">
+
+            <div class="col-md-9 section-title">
+                <div class="row">
+                    <div class="col-md-12">
+
+                        <h4>
+                            Moje Ogłoszenia
+                        </h4>
+                    </div>
+                </div>
+                <div class="row m-b-10">
+                    <div class="row-eq-height">
+                        @foreach (var item in Model.ListingsPageList)
+                        {
+                            <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4">
+                                @Html.Partial("~/Views/Advertisement/_Card.cshtml", item)
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="panel-header bdr-b">
+                    <div class="container-fluid">
+                        <div class=" col-md-12">
+                            <h5 class="pull-left mrg-t">
+                                @string.Format("Strona {0} z {1}", Model.ListingsPageList.PageCount < Model.PageNumber ? 0 : Model.PageNumber, Model.ListingsPageList.PageCount)
+                            </h5>
+                            @Html.PagedListPager(Model.ListingsPageList, (page) => { return Request.UrlReplace("PageNumber", page.ToString()); },
+                            new PagedListRenderOptions
+                            {
+                                ContainerDivClasses = new List<string>(new string[] { "pull-right" }),
+                                DisplayPageCountAndCurrentLocation = false,
+                                MaximumPageNumbersToDisplay = 5,
+                                DisplayEllipsesWhenNotShowingAllPageNumbers = false
+                            })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

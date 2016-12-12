@@ -1,0 +1,12 @@
+﻿@model AutoMoto.Contracts.ViewModels.SearchModel
+@{
+    Layout = null;
+}
+<div class="row-eq-height">
+    @foreach (var item in Model.ListingsPageList)
+    {
+        <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4">
+            @Html.Partial("~/Views/Advertisement/_Card.cshtml", item)
+        </div>
+    }
+</div>

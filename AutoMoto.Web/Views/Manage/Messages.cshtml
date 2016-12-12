@@ -1,0 +1,88 @@
+﻿@model PagedList.IPagedList<AutoMoto.Models.Message>
+@using AutoMoto.Contracts
+@using Microsoft.AspNet.Identity
+@using PagedList.Mvc;
+@{
+    ViewBag.Title = "Wiadomości";
+    var userId = User.Identity.GetUserId();
+}
+@section Styles {
+    <link href="~/Content/PagedList.css" rel="stylesheet" />
+}
+<div class="body-content container-fluid">
+    <div class="main-section row">
+        <div class="container-fluid mrg-tb">
+            <div class=" col-md-9">
+                <div id="myTabContent" class="tab-content">
+                    <div role="tabpanel" class="tab-pane card-content fade active in" id="listings" aria-labelledby="listings-tab">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                Wiadomości
+                            </div>
+                            <div class="panel-body table-responsive">
+
+                                    <input type="hidden" name="actionType" id="actionType" />
+                                    <table class="table table-hover mails">
+                                        <tbody>
+                                            @foreach (var messageThread in Model)
+                                            {
+
+
+                                                <tr >
+                                                    <td width="200">
+                                                        <img class="img-circle thumb-sm m-r-5 pull-left" src="http://www.gravatar.com/avatar/?d=mm" />
+                                                        <div>
+                                                            @if (userId == messageThread.FromUserId)
+                                                            {
+                                                                <p>@messageThread.ToUser.FirstName @messageThread.ToUser.LastName</p>
+                                                            }
+                                                            @if (userId == messageThread.ToUserId)
+                                                            {
+                                                                <p>@messageThread.FromUser.FirstName @messageThread.FromUser.LastName</p>
+                                                            }
+                                                            <br />
+                                                        </div>
+                                                    </td>
+                                                    <td width="250">
+                                                        <a href="@Url.Action("Message", "Manage", new { thread = messageThread.Thread})">
+                                                            <p class="truncate text-sm">
+
+                                                                    @Html.Raw(messageThread.Content)
+                                                                
+                                                            </p>
+                                                        </a>
+                                                    </td>
+                                                    <td width="150">
+                                                        <a href="@Url.Action("Message", "Manage", new { thread = messageThread.Thread})">
+                                                            <p class="truncate text-xs">@Html.Raw(messageThread.Advertisement.Title)</p>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+
+                                <hr>
+                                <div class="row">
+                                    <div class="col-xs-7 m-t-10">
+                                        @string.Format("Strona {0} - {1} z {2}", Model.PageNumber, Model.PageNumber * Model.TotalItemCount, Model.TotalItemCount)
+                                    </div>
+                                    <div class="col-xs-5">
+                                        @Html.PagedListPager(Model, (page) => { return Request.UrlReplace("PageNumber", page.ToString()); },
+                                        new PagedListRenderOptions
+                                        {
+                                            ContainerDivClasses = new List<string>(new string[] { "pull-right" }),
+                                            DisplayPageCountAndCurrentLocation = false,
+                                            MaximumPageNumbersToDisplay = 5,
+                                            DisplayEllipsesWhenNotShowingAllPageNumbers = false
+                                        })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

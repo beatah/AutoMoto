@@ -1,0 +1,127 @@
+﻿@model AutoMoto.Contracts.ViewModels.MessageDetailsViewModel
+@using AutoMoto.Contracts
+@using Microsoft.AspNet.Identity
+@{
+    ViewBag.Title = "Wiadomości";
+}
+<div class="body-content container-fluid">
+    <div class="main-section row">
+        <div class="container-fluid mrg-tb">
+            @*@Html.Partial("_DashBoardSide", "messages")*@
+            <div class=" col-md-9">
+                <div id="myTabContent" class="tab-content">
+                    <div role="tabpanel" class="tab-pane card-content fade active in" id="listings" aria-labelledby="listings-tab">
+
+                        @if (TempData[TempKeys.UserMessage] != null)
+                        {
+                            var alertState = "bg-success";
+                            var icon = "fa-check";
+
+                            if (TempData[TempKeys.UserMessageAlertState] != null)
+                            {
+                                alertState = "bg-danger";
+                                icon = "fa-exclamation-circle";
+                            }
+
+                            <div class="alert @alertState">
+                                <p><i class="fa @icon"></i> @TempData[TempKeys.UserMessage]</p>
+                            </div>
+                        }
+
+
+                        <div class="btn-toolbar" role="toolbar">
+                            <div class="btn-group">
+                                @*<a class="btn btn-sm btn-primary" href="@Url.Action("Messages", "Manage")" title="[[[Messages]]]"><i class="fa fa-fw fa-level-up fa-rotate-270"></i></a>*@
+                            </div>
+                        </div>
+                        <!-- Message -->
+                        <div class="panel panel-default m-t-20">
+                            <!-- Header -->
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-users"></i>@Model.Messages.First().FromUser.FirstName @Model.Messages.First().FromUser.LastName, @Model.Messages.First().ToUser.FirstName @Model.Messages.First().ToUser.LastName</h3>
+                            </div>
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-comments-o"></i> @Model.Messages.First().Advertisement.Title</h3>
+                            </div>
+                            <!-- Header -->
+                            <!-- Listing -->
+
+                                <div class="panel-body p-t-10 p-b-10">
+                                    <div class="col-md-2">
+                                        <a href="@Url.Action("Details", "Advertisement", new { id = Model.Messages.First().AdvertisementId })">
+                                            <img src="@Model.Url" />
+                                        </a>
+                                    </div>
+                                    <div class="col-md-10">
+                                        <a href="@Url.Action("Details", "Advertisement", new { id = Model.Messages.First().AdvertisementId})">
+                                            <h3>
+                                              @Model.Messages.First().Advertisement.Title
+                                            </h3>
+                                        </a>
+
+                                            <h4>
+                                                @Model.Messages.First().Advertisement.Car.Price
+                                            </h4>
+
+                                        <p class="lead text-lighten">
+                                           @Model.Messages.First().Advertisement.User.Address.City
+                                        </p>
+                                    </div>
+                                </div>
+
+                            <!-- Listing -->
+                            <!-- Reply -->
+                            <div class="panel-body p-t-10 p-b-10">
+                                <div class="media">
+                                    @*<a href="@Url.Action("Profile", "Listing", new { id = User.Identity.GetUserId() })" class="pull-left">
+                                        <img class="pull-left media-object img-circle thumb-sm" src="@BeYourMarket.Web.Utilities.ImageHelper.GetUserProfileImagePath(User.Identity.GetUserId())" />
+                                    </a>*@
+                                    <div class="media-body">
+                                        <form action="@Url.Action("Message", "Manage")" method="post" role="form">
+                                            <input type="hidden" name="thread" id="thread" value="@Model.Messages.First().Thread" />
+                                            <textarea class="form-control m-b-10" id="messageText" name="messageText" required rows="4" placeholder="Wiadomość..."></textarea>
+                                            <button class="btn btn-primary" type="submit"><i class="fa fa-send"></i> Wyślij</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Reply -->
+                            <div class="panel-body">
+                                <table class="table table-striped">
+                                    <tbody>
+                                        @foreach (var message in Model.Messages)
+                                        {
+                                            <tr>
+                                                <td class="col-md-2">
+                                                    <div class="media">
+                                                        @*<a href="@Url.Action("Profile", "Listing", new { id = message.AspNetUser.Id })" cla class="pull-left">
+                                                            <img class="pull-left media-object img-circle thumb-sm" src="@BeYourMarket.Web.Utilities.ImageHelper.GetUserProfileImagePath(message.AspNetUser.Id)" />
+                                                        </a>*@
+                                                        <small class="text-muted">@message.FromUser.FirstName @message.FromUser.LastName</small>
+                                                    </div> <!-- media -->
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <p style="white-space: pre-line" class="text-sm">@Html.Raw(message.Content)</p>
+                                                    </div>
+                                                </td>
+                                                <td class="col-md-2">
+                                                    @*<span class="media-meta pull-right"><i class="fa fa-clock-o"></i> @(message.Created.Date == DateTime.Today.Date ? message.Created.ToShortTimeString() : message.Created.ToShortDateString())</span>*@
+                                                </td>
+                                            </tr>
+
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- panel-body -->
+                        </div> <!-- End panel -->
+                        <!-- End message -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+}

@@ -1,57 +1,74 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - AutoMoto</title>
+    <link rel="icon" type="image/jpeg" />
+    <title>@ViewBag.Title</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> 
     @Styles.Render("~/Content/css")
     @Styles.Render("~/Content/theme.css")
+    @Styles.Render("~/Content/animate.css")
     @Scripts.Render("~/bundles/modernizr")
-
+    @RenderSection("styles", required: false)
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+<div class="wrapper row-offcanvas row-offcanvas-left">
+    <aside class="left-section sidebar-offcanvas @(Convert.ToBoolean(ViewBag.SideCollapse) ? "collapse-left" : "")">
+        <header class="header hidden-xs">
+            <a href="@Url.Action("Index", "Home")" class="logo">
+                <img src="../../Content/logowhite.png"/>
+            </a>
+        </header>
+        @Html.Partial("_Navigation")
+    </aside>
+    <aside class="right-section">
+        <header class="header">
+            <nav class="navbar navbar-static-top user-nav" role="navigation">
+                <a href="#" class="navbar-btn sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("AutoMoto", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("Ogłoszenia", "Index", "Advertisement")</li>
-                    <li>@Html.ActionLink("Dodaj ogłoszenie", "Create", "Advertisement")</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
-                    <li>@Html.ActionLink("Admin", "Index", "Admin")</li>
-                </ul>
-                @Html.Partial("_LoginPartial")
-            </div>
-        </div>
-    </div>
-    <div class="container body-content">
-        @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
-        </footer>
-    </div>
+                </a>
+                <a href="@Url.Action("Index", "Home")" class="visible-xs navbar-brand">
+                </a>
+
+                <div class="navbar-right">
+                    @Html.Partial("_LoginPartial")
+                </div>
+                <a class="btn navbar-btn btn-default hidden-sm hidden-xs navbar-right" href="@Url.Action("Create", "Advertisement", new {id = string.Empty})"><i class="mdi-content-add-circle-outline"></i> Dodaj ogłoszenie</a>
+            </nav>
+        </header>
+        <section class="content">
+            @RenderBody()
+        </section>
+    </aside>
+</div>
+    @Scripts.Render("~/Scripts/theme.js")
+    @RenderSection("scripts", required: false)
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @Scripts.Render("~/bundles/app")
     @Scripts.Render("~/Scripts/underscore-min.js")
-    @RenderSection("scripts", required: false)
+
+
     @RenderSection("MyScripts", required: false)
 <script type="text/x-template" id="notifications-template">
         <ul class="notifications">
             <%
             _.each(notifications, function(notification){ %>
             <% var url = "Advertisement/Details/"+notification.advertisement.id; %> 
-            <li><a href= <%= url %> ><%= notification.dateTime %> <span class="highlight"><%= notification.advertisement.user.firstName %> <%= notification.advertisement.user.lastName %></span> dodał ogłoszenie: <%= notification.advertisement.title %> </a></li>
+            <% var datestring =  notification.dateTime; %> 
+            <% var date = new Date(datestring); %> 
+            <li><a href= <%= url %> ><%= date.getFullYear() %>.<%= date.getMonth()  %>.<%= date.getDay() %> <span class="highlight"><%= notification.advertisement.user.firstName %> <%= notification.advertisement.user.lastName %></span> dodał ogłoszenie: <%= notification.advertisement.title %> </a></li>
             
 
             <%
@@ -72,7 +89,7 @@
 
                 $(".notifications").popover({
                     html: true,
-                    title: "Notifications",
+                    title: "Powiadomienia",
                     content: function () {
                         var compiled = _.template($("#notifications-template").html());
                         return compiled({ notifications: notifications });

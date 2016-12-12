@@ -1,164 +1,127 @@
-﻿@model AutoMoto.Contracts.ViewModels.AdvertisementViewModel
+﻿@using AutoMoto.Contracts
+@model AutoMoto.Contracts.ViewModels.AdvertisementViewModel
 @{
-    ViewBag.Title = "Form";
+    ViewBag.Title = "Dodaj ogłoszenie";
 }
 @Styles.Render("~/Content/fileinput.min.css")
-@using (Html.BeginForm("Create", "Advertisement", FormMethod.Post, new { enctype = "multipart/form-data" }))
-{ <section class="content">
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="page-header">Dodaj ogłoszenie</h1>
-            </div>
-        </div>
-        <div class="main-section">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="center-block col-md-8">
-                        <div class="panel panel-default mrg-t">
+@using (Html.BeginForm("Create", "Advertisement", FormMethod.Post, new {enctype = "multipart/form-data"}))
+{
 
-                            <div class="panel-body bdr-b panel-header">
-                                <h4>[[[Dodaj ogłoszenie (it's 100% free)]]]</h4>
+    <div class="main-section">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="center-block col-md-8">
+                    <div class="panel panel-default mrg-t">
+
+                        <div class="panel-body bdr-b panel-header">
+                            <h4>Dodaj ogłoszenie</h4>
+                        </div>
+                        <div class="panel-body bdr-b">
+                 
+                            @if (ViewData.ModelState.Keys.Any(k=> ViewData.ModelState[k].Errors.Any())) {
+                            <div class="alert alert-danger">
+                                <button class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                @Html.ValidationSummary(false, "Uwaga: ")
                             </div>
-                            <div class="panel-body bdr-b">
+                            }
+                            @Html.HiddenFor(m => m.Id)
+                            @if (TempData[TempKeys.UserMessage] != null)
+                            {
+                                var alertState = "bg-success";
+                                var icon = "fa-check";
 
-                                @Html.HiddenFor(m => m.Id)
+                                if (TempData[TempKeys.UserMessageAlertState] != null)
+                                {
+                                    alertState = "bg-danger";
+                                    icon = "fa-exclamation-circle";
+                                }
+
+                                <div class="alert @alertState">
+                                    <p><i class="fa @icon"></i> @TempData[TempKeys.UserMessage]</p>
+                                </div>
+                            }
+                            <fieldset>
+                                <legend>Szczegóły</legend>
                                 <div class="form-group">
                                     @Html.LabelFor(m => m.Title)
-                                    @Html.TextBoxFor(m => m.Title, new { @class = "form-control", autofocus = "autofocus" })
+                                    @Html.TextBoxFor(m => m.Title, new {@class = "form-control", autofocus = "autofocus"})
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <div class="form-group">
-                                            @Html.LabelFor(m => m.Description)
-                                            @Html.TextAreaFor(m => m.Description, 10, 40, new { @class = "form-control" })
-                                        </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Description)
+                                    @Html.TextAreaFor(m => m.Description, 10, 40, new {@class = "form-control"})
+                                </div>
+
+
+
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Price)
+                                    <div class="input-group">
+                                        @Html.TextBoxFor(m => m.Price, new {@class = "form-control"})
+                                        <span class="input-group-addon">zł</span>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-lg-4">
-                                        <div class="form-group">
-                                            @Html.LabelFor(m => m.Price)
-                                            <div class="input-group">
-                                                @Html.TextBoxFor(m => m.Price, new { @class = "form-control" })
-                                                <span class="input-group-addon">zł</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-lg-9">
-                        <div class="panel panel-primary">
-                            <div class="panel-heading">Zdjęcia</div>
-                            <div class="panel-body">
-                                <div class="row">
-
-                                    <label class="control-label">Select File</label>
-                                    <input id="PhotoFiles" name="PhotoFiles" type="file" class="file" multiple>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="row">
-                    <div class="col-lg-9">
-                        <div class="panel panel-primary">
-
-                            <div class="panel-heading">Twój pojazd</div>
-                            <div class="panel-body">
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            @Html.LabelFor(m => m.Manufacturer)
-                                            @Html.DropDownListFor(m => m.Manufacturer, new SelectList(Model.Manufacturers, "Id", "Name"), "Wybierz markę", new { @class = "form-control" })
-                                        </div>
-                                    </div>
-
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            @Html.LabelFor(m => m.Model)
-                                            @Html.DropDownListFor(m => m.Model, new SelectList(Enumerable.Empty<SelectListItem>(), "Id", "Name"), "Wybierz model", new { @class = "form-control", disabled = true })
-                                        </div>
+                            </fieldset>
+                            <fieldset>
+                                <legend>Zdjęcia</legend>
+                                <div class="form-group">
+                                    <div class="target">
+                                        <input type="file" id="PhotoFiles" name="PhotoFiles" class="file" multiple>
                                     </div>
 
                                 </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            @Html.LabelFor(m => m.Year)
-                                            @Html.TextBoxFor(m => m.Year, new { @class = "form-control" })
-                                        </div>
-                                    </div>
+                            </fieldset>
+                            <fieldset>
+                                <legend>Twój pojazd</legend>
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Manufacturer)
+                                    @Html.DropDownListFor(m => m.Manufacturer, new SelectList(Model.Manufacturers, "Id", "Name"), "Wybierz markę", new {@class = "form-control"})
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Model)
 
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            @Html.LabelFor(m => m.FuelType)
-                                            @Html.EnumDropDownListFor(
-                                x => x.FuelType,
-                                "Wybierz rodzaj paliwa",
-                                new { @class = "form-control" })
-                                        </div>
-                                    </div>
+                                        @Html.DropDownListFor(m => m.Model, new SelectList(Enumerable.Empty<SelectListItem>(), "Id", "Name"), "Wybierz model", new {@class = "form-control", disabled = true})
 
                                 </div>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            @Html.LabelFor(m => m.EngineCap)
-                                            <div class="input-group">
-                                                @Html.TextBoxFor(m => m.EngineCap, new { @class = "form-control" })
-                                                <span class="input-group-addon">cm3</span>
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-                                    <div class="col-lg-6">
-                                        <div class="form-group">
-                                            @Html.LabelFor(m => m.Mileage)
-                                            <div class="input-group">
-                                                @Html.TextBoxFor(m => m.Mileage, new { @class = "form-control" })
-                                                <span class="input-group-addon">km</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Year)
+                                    @Html.TextBoxFor(m => m.Year, new {@class = "form-control"})
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <div class="row">
-                    <div class="col-lg-9">
-                        <div class="panel panel-primary">
-                            <div class="panel-heading">Dodatkowe wyposażenie</div>
-                            <div class="panel-body">
-                                <div class="row">
-                                    <div class="col-lg-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.FuelType)
+                                    @Html.EnumDropDownListFor(
+                                        x => x.FuelType,
+                                        "Wybierz rodzaj paliwa",
+                                        new {@class = "form-control"})
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.EngineCap)
+                                    <div class="input-group">
+                                        @Html.TextBoxFor(m => m.EngineCap, new {@class = "form-control"})
+                                        <span class="input-group-addon">cm3</span>
                                     </div>
                                 </div>
-                            </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Mileage)
+                                    <div class="input-group">
+                                        @Html.TextBoxFor(m => m.Mileage, new {@class = "form-control"})
+                                        <span class="input-group-addon">km</span>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset>
+                                <button class="btn btn-primary" type="submit"><i class="fa fa-save"></i> Zapisz</button>
+                                <a class="btn btn-default" href="@Url.Action("Index", "Home")"><i class="fa fa-remove"></i> Anuluj</a>
+                            </fieldset>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
-        <button type="submit" class="btn btn-primary">Zapisz</button>
-        }
-
+    </div>
+}
         @section Scripts {
             <script>
                 $('#Manufacturer')
