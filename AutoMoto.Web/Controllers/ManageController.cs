@@ -25,17 +25,19 @@ namespace AutoMoto.Web.Controllers
         private ApplicationUserManager _userManager;
         private IMessageService _messageService;
         private IAddressService _addressService;
+        private IAdvertisementService _advertisementService;
         private IUserNotificationService _userNotificationService;
         private IUnitOfWorkAsync _unitOfWorkAsync;
 
 
-        public ManageController(IMessageService messageService, IUserNotificationService userNotificationService, IUnitOfWorkAsync unitOfWorkAsync, IAddressService addressService)
+        public ManageController(IMessageService messageService, IUserNotificationService userNotificationService, IUnitOfWorkAsync unitOfWorkAsync, IAddressService addressService, IAdvertisementService advertisementService)
         {
 
             _messageService = messageService;
             _userNotificationService = userNotificationService;
             _unitOfWorkAsync = unitOfWorkAsync;
             _addressService = addressService;
+            _advertisementService = advertisementService;
         }
 
 
@@ -69,28 +71,42 @@ namespace AutoMoto.Web.Controllers
             int pageNumber = (page ?? 1);
 
             var userId = User.Identity.GetUserId();
-            var messages = await _messageService.Query(x => x.FromUserId == userId || x.ToUserId == userId).Include(x => x.FromUser).Include(x => x.ToUser).Include(x => x.Advertisement).SelectAsync();
+            var messages =
+                await
+                    _messageService.Query(x => x.FromUserId == userId || x.ToUserId == userId)
+                        .Include(x => x.FromUser)
+                        .Include(x => x.ToUser)
+                        .Include(x => x.Advertisement)
+                        .SelectAsync();
             var messageEntities = messages.ToList();
 
-            var threads = messageEntities.Select(x => x.Thread).Distinct().ToList();
-            var threadMessages = threads.Select(thread => messageEntities.Where(x => x.Thread == thread).OrderByDescending(x => x.Id).First()).ToList().OrderByDescending(x => x.Id);
+
+            messageEntities = messageEntities.GroupBy(x => new
+            {
+                x.AdvertisementId
+            },
+ (
+                    key, group) => group.OrderBy(x => x.Id).First()).ToList();
+
+            //  var threads = messageEntities.Select(x => x.Thread).Distinct().ToList();
+            // var threadMessages = threads.Select(thread => messageEntities.Where(x => x.Thread == thread).OrderByDescending(x => x.Id).First()).ToList().OrderByDescending(x => x.Id);
 
 
 
-            var model = threadMessages.ToPagedList(pageNumber, pageSize);
+            var model = messageEntities.ToPagedList(pageNumber, pageSize);
 
             return View(model);
         }
 
 
-        public async Task<ActionResult> Message(int thread)
+        public async Task<ActionResult> Message(int advertisementId)
         {
             var userIdCurrent = User.Identity.GetUserId();
 
             var messages =
                 await
                     _messageService.Queryable()
-                        .Where(x => x.Thread == thread)
+                        .Where(x => x.AdvertisementId == advertisementId && (x.FromUserId == userIdCurrent || x.ToUserId == userIdCurrent))
                         .Include(x => x.Advertisement)
                         .Include(x => x.Advertisement.Photos)
                         .Include(x => x.Advertisement.Car)
@@ -148,38 +164,29 @@ namespace AutoMoto.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Message(int thread, string messageText)
+        public async Task<ActionResult> Message(int messageId, string messageText)
         {
             var userIdCurrent = User.Identity.GetUserId();
 
-            var messageFromThread = _messageService.Queryable().FirstOrDefault(x => x.Thread == thread);
-            string toUserId = "";
-
-
-            if (messageFromThread.FromUserId == userIdCurrent)
+            var lastMessage = _messageService.Find(messageId);
+            string messageTo;
+            if (userIdCurrent == lastMessage.FromUserId)
             {
-                toUserId = messageFromThread.ToUserId;
-            }
-            else if (messageFromThread.ToUserId == userIdCurrent)
-            {
-                toUserId = messageFromThread.FromUserId;
-
+                messageTo = lastMessage.ToUserId;
             }
             else
             {
-                return RedirectToAction("Messages");
-
+                messageTo = lastMessage.FromUserId;
             }
 
 
             var message = new Message()
             {
-                Thread = thread,
                 FromUserId = userIdCurrent,
                 Content = messageText,
                 ObjectState = ObjectState.Added,
-                AdvertisementId = messageFromThread.AdvertisementId,
-                ToUserId = toUserId
+                AdvertisementId = lastMessage.AdvertisementId,
+                ToUserId = messageTo
             };
 
             _messageService.Insert(message);
@@ -199,33 +206,33 @@ namespace AutoMoto.Web.Controllers
 
             TempData[TempKeys.UserMessage] = "Wiadomość została wysłana";
 
-            return RedirectToAction("Message", new { thread = thread });
+            return RedirectToAction("Message", new { advertisementId = lastMessage.AdvertisementId });
         }
 
-        //
-        // GET: /Manage/Index
-        public async Task<ActionResult> Index(ManageMessageId? message)
-        {
-            ViewBag.StatusMessage =
-                message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
-                : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
-                : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
-                : "";
+        ////
+        //// GET: /Manage/Index
+        //public async Task<ActionResult> Index(ManageMessageId? message)
+        //{
+        //    ViewBag.StatusMessage =
+        //        message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
+        //        : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
+        //        : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
+        //        : message == ManageMessageId.Error ? "An error has occurred."
+        //        : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
+        //        : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
+        //        : "";
 
-            var userId = User.Identity.GetUserId();
-            var model = new IndexViewModel
-            {
-                HasPassword = HasPassword(),
-                PhoneNumber = await UserManager.GetPhoneNumberAsync(userId),
-                TwoFactor = await UserManager.GetTwoFactorEnabledAsync(userId),
-                Logins = await UserManager.GetLoginsAsync(userId),
-                BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId)
-            };
-            return View(model);
-        }
+        //    var userId = User.Identity.GetUserId();
+        //    var model = new IndexViewModel
+        //    {
+        //        HasPassword = HasPassword(),
+        //        PhoneNumber = await UserManager.GetPhoneNumberAsync(userId),
+        //        TwoFactor = await UserManager.GetTwoFactorEnabledAsync(userId),
+        //        Logins = await UserManager.GetLoginsAsync(userId),
+        //        BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId)
+        //    };
+        //    return View(model);
+        //}
 
         //
         // POST: /Manage/RemoveLogin

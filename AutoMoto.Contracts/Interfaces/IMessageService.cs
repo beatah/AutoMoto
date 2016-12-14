@@ -3,7 +3,9 @@ using Service.Pattern;
 
 namespace AutoMoto.Contracts.Interfaces
 {
-    public interface IMessageService:IService<Message>
+    public interface IMessageService : IService<Message>
     {
+
+
     }
 }

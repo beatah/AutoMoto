@@ -11,18 +11,16 @@ namespace AutoMoto.Contracts.ViewModels
         public int ManufacturerId { get; set; }
         public int ModelId { get; set; }
 
-        //public List<int> ListingTypeID { get; set; }
+
 
         public string SearchText { get; set; }
         public string Location { get; set; }
 
-        //public bool PhotoOnly { get; set; }
+
 
         public decimal? PriceFrom { get; set; }
 
         public decimal? PriceTo { get; set; }
-
-        // public List<MetaCategory> MetaCategories { get; set; }
 
         public List<ListingItemModel> Advertisements { get; set; }
 
@@ -30,19 +28,18 @@ namespace AutoMoto.Contracts.ViewModels
 
         public List<Category> Categories { get; set; }
 
-        public List<Category> BreadCrumb { get; set; }
 
         public List<Manufacturer> Manufacturers { get; set; }
         public List<Models.Model> Models { get; set; }
 
-        //public ListingModelGrid Grid { get; set; }
+
     }
 
     public class SortViewModel
     {
         public SortViewModel()
         {
-            PageSize = 18;
+            PageSize = 6;
             PageNumber = 1;
         }
 

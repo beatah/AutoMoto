@@ -44,7 +44,7 @@
                                                         </div>
                                                     </td>
                                                     <td width="250">
-                                                        <a href="@Url.Action("Message", "Manage", new { thread = messageThread.Thread})">
+                                                        <a href="@Url.Action("Message", "Manage", new { advertisementId=messageThread.AdvertisementId})">
                                                             <p class="truncate text-sm">
 
                                                                     @Html.Raw(messageThread.Content)
@@ -53,7 +53,7 @@
                                                         </a>
                                                     </td>
                                                     <td width="150">
-                                                        <a href="@Url.Action("Message", "Manage", new { thread = messageThread.Thread})">
+                                                        <a href="@Url.Action("Message", "Manage", new { advertisementId=messageThread.AdvertisementId})">
                                                             <p class="truncate text-xs">@Html.Raw(messageThread.Advertisement.Title)</p>
                                                         </a>
                                                     </td>

@@ -109,10 +109,6 @@
     <Compile Include="Migrations\201612081753313_x3.Designer.cs">
       <DependentUpon>201612081753313_x3.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201612101503440_n.cs" />
-    <Compile Include="Migrations\201612101503440_n.Designer.cs">
-      <DependentUpon>201612101503440_n.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\AutoDbMigrationConfiguration.cs" />
     <Compile Include="Models\Address.cs" />
     <Compile Include="Models\Advertisement.cs" />
@@ -182,9 +178,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201612081753313_x3.resx">
       <DependentUpon>201612081753313_x3.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201612101503440_n.resx">
-      <DependentUpon>201612101503440_n.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
