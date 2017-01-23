@@ -1,4 +1,5 @@
 ﻿using AutoMoto.Enums;
+using AutoMoto.Model;
 using AutoMoto.Models;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -39,6 +40,13 @@ namespace AutoMoto.Contracts.ViewModels
         [DisplayName("Rok Produkcji")]
         [Required(ErrorMessage = "Pole rok produkcji jest wymagane")]
         public int Year { get; set; }
+
+        public List<CheckBoxListItem> Features { get; set; }
         public ICollection<HttpPostedFileBase> PhotoFiles { get; set; }
+
+        public AdvertisementViewModel()
+        {
+            Features = new List<CheckBoxListItem>();
+        }
     }
 }

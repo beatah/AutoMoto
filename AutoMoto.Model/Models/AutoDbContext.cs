@@ -25,6 +25,7 @@ namespace AutoMoto.Model.Models
         public DbSet<Message> Messages { get; set; }
         public DbSet<Advertisement> Advertisements { get; set; }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<Feature> Features { get; set; }
         public DbSet<Following> Followings { get; set; }
         public DbSet<Photo> Photos { get; set; }
         public DbSet<AutoMoto.Models.Model> Modele { get; set; }

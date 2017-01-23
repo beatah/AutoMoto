@@ -89,6 +89,7 @@
     <Compile Include="Dtos\NotificationDto.cs" />
     <Compile Include="HtmlExtensions.cs" />
     <Compile Include="Interfaces\IAdvertisementService.cs" />
+    <Compile Include="Interfaces\IFeatureService.cs" />
     <Compile Include="Interfaces\IFollowingService.cs" />
     <Compile Include="Interfaces\IManufacturerService.cs" />
     <Compile Include="Interfaces\IMessageService.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="ViewModels\AdvertisementDetailsViewModel.cs" />
     <Compile Include="ViewModels\AdvertisementItemViewModel.cs" />
     <Compile Include="ViewModels\AdvertisementViewModel.cs" />
+    <Compile Include="ViewModels\FeatureFormViewModel.cs" />
     <Compile Include="ViewModels\ManufacturerFormViewModel.cs" />
     <Compile Include="ViewModels\ManufacturerViewModel.cs" />
     <Compile Include="ViewModels\MessageDetailsViewModel.cs" />

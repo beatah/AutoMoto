@@ -67,56 +67,28 @@
                         <div class="tab-content">
                             <div role="tabpanel" class="tab-pane fade active in" id="description">
                                 <div class="panel panel-default bdr-t-none">
-                                    <div class="panel-body" style="">
-                                        <pre style="font-family: 'Questrial', sans-serif;color: #50505f; font-size: 16px; word-break: break-all; word-wrap: break-word;">@Model.AdvertisementCurrent.Description </pre>
 
-                                    </div>
-                                    <div class="panel-heading bdr-t">
-                                        <i class="fa fa-picture-o"></i> Zdjęcia
-                                    </div>
-                                    <div class="panel-body">
-                                        @if (Model.Pictures.Count > 0)
-                                        {
-                                            <div id="carousel-gallery" class="carousel slide" data-ride="carousel">
-                                                <ol class="carousel-indicators">
-                                                    @for (int i = 0; i < Model.Pictures.Count; i++)
-                                                    {
-                                                        <li data-target="#carousel-gallery" data-slide-to="@i"></li>
-                                                    }
-                                                </ol>
-                                                <div class="carousel-inner" role="listbox">
-                                                    @for (int i = 0; i < Model.Pictures.Count; i++)
-                                                    {
-                                                        <div class="item @(i == 0 ? "active" : "")">
-                                                            <img style=" margin-left: auto; margin-right: auto;" alt="" src="@Model.Pictures[i].Url" data-holder-rendered="true">
-                                                        </div>
-                                                    }
-                                                </div>
-                                                <a class="left carousel-control" href="#carousel-gallery" role="button" data-slide="prev">
-                                                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-                                                    <span class="sr-only">Poprzednie</span>
-                                                </a>
-                                                <a class="right carousel-control" href="#carousel-gallery" role="button" data-slide="next">
-                                                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-                                                    <span class="sr-only">Następne</span>
-                                                </a>
-                                            </div>
-
-                                        }
-
-                                    </div>
-                                    <table class="table" style="font-size: 18px">
+                                    <table class="table" style="font-size: 21px">
                                         <tbody>
+                                        <tr>
+                                            <td class="col-lg-3">
+                                                Marka
+                                            </td>
+                                            <td class="col-lg-9">
+                                                @Model.AdvertisementCurrent.Car.Model.Manufacturer.Name
+                                            </td>
+                                        </tr>
+
                                             <tr>
-                                                <td>
-                                                    Marka
+                                                <td class="col-lg-3">
+                                                    Model
                                                 </td>
-                                                <td>
-                                                    @Model.AdvertisementCurrent.Car.Model.Manufacturer.Name
+                                                <td class="col-lg-9">
+                                                    @Model.AdvertisementCurrent.Car.Model.Name
                                                 </td>
                                             </tr>
 
-                                            <tr>
+                                        <tr>
                                                 <td>
                                                     Cena
                                                 </td>
@@ -139,6 +111,69 @@
                                                     @Html.DisplayFor(x => Model.AdvertisementCurrent.User.Address.City)
                                                 </td>
                                             </tr>
+
+                                            @if (@Model.Features.Any())
+                                            {
+                                                <tr>
+                                                    <td class="col-lg-3">
+                                                        Wyposażenie
+                                                    </td>
+                                                    <td class="col-lg-9">
+                                                        @foreach (var feature in Model.Features)
+                                                        {
+                                                            <div style="margin: 6px 2px; float: left">
+                                                                <label class="label label-primary" style="background-color: #50505f;">@feature.Name</label>
+
+                                                            </div>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+
+
+                                        </tbody>
+                                    </table>
+                                    <div class="panel-body" style="">
+                                        <pre style="font-family: 'Roboto', sans-serif;color: #50505f; font-size: 16px; white-space: pre-wrap;word-break: keep-all;">@Model.AdvertisementCurrent.Description </pre>
+
+                                    </div>
+
+                                    <div class="panel-heading bdr-t">
+                                        <i class="fa fa-picture-o"></i> Zdjęcia
+                                    </div>
+                                    <div class="panel-body">
+                                        @if (Model.Pictures.Count > 0)
+                                        {
+                                            <div id="carousel-gallery" class="carousel slide" data-ride="carousel">
+                                                <ol class="carousel-indicators">
+                                                    @for (int i = 0; i < Model.Pictures.Count; i++)
+                                                    {
+                                                        <li data-target="#carousel-gallery" data-slide-to="@i"></li>
+                                                    }
+                                                </ol>
+                                                <div class="carousel-inner" role="listbox">
+                                                    @for (int i = 0; i < Model.Pictures.Count; i++)
+                                                    {
+                                                        <div class="item @(i == 0 ? "active" : "")">
+                                                            <img style="margin-left: auto; margin-right: auto;" alt="" src="@Model.Pictures[i].Url" data-holder-rendered="true">
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <a class="left carousel-control" href="#carousel-gallery" role="button" data-slide="prev">
+                                                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                                                    <span class="sr-only">Poprzednie</span>
+                                                </a>
+                                                <a class="right carousel-control" href="#carousel-gallery" role="button" data-slide="next">
+                                                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                                                    <span class="sr-only">Następne</span>
+                                                </a>
+                                            </div>
+
+                                        }
+
+                                    </div>
+                                    <table class="table" style="font-size: 21px">
+                                        <tbody>
                                             <tr>
                                                 <td>
                                                     Dodano
@@ -146,10 +181,7 @@
                                                 <td>
                                                     @Model.AdvertisementCurrent.AddedDate.ToShortDateString()
                                                 </td>
-                                            </tr>
-
-                                        </tbody>
-                                    </table>
+                                            </tr></tbody></table>
                                 </div>
                             </div>
                         </div>

@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CheckBoxListItem.cs" />
     <Compile Include="Mappings\AspNetRoleMap.cs" />
     <Compile Include="Mappings\AspNetUserClaimMap.cs" />
     <Compile Include="Mappings\AspNetUserLoginMap.cs" />
@@ -109,6 +110,10 @@
     <Compile Include="Migrations\201612081753313_x3.Designer.cs">
       <DependentUpon>201612081753313_x3.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201701221737470_AddFeatureToCar.cs" />
+    <Compile Include="Migrations\201701221737470_AddFeatureToCar.Designer.cs">
+      <DependentUpon>201701221737470_AddFeatureToCar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\AutoDbMigrationConfiguration.cs" />
     <Compile Include="Models\Address.cs" />
     <Compile Include="Models\Advertisement.cs" />
@@ -118,6 +123,7 @@
     <Compile Include="Models\AspNetUserLogin.cs" />
     <Compile Include="Models\Car.cs" />
     <Compile Include="Enums\FuelTypes.cs" />
+    <Compile Include="Models\Feature.cs" />
     <Compile Include="Models\Following.cs" />
     <Compile Include="Models\FollowingNotification.cs" />
     <Compile Include="Models\Manufacturer.cs" />
@@ -178,6 +184,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201612081753313_x3.resx">
       <DependentUpon>201612081753313_x3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201701221737470_AddFeatureToCar.resx">
+      <DependentUpon>201701221737470_AddFeatureToCar.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

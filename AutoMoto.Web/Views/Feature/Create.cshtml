@@ -1,0 +1,24 @@
+﻿@model AutoMoto.Contracts.ViewModels.FeatureFormViewModel
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Dodaj wyposażenie</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-2">
+        @using (Html.BeginForm("Create", "Feature"))
+        {
+            <div class="form-group">
+                @Html.LabelFor(m => m.Name)
+                @Html.TextBoxFor(m => m.Name, new { @class = "form-control", autofocus = "autofocus" })
+
+            </div>
+            <button type="submit" class="btn btn-primary">Zapisz</button>
+        }
+    </div>
+</div>

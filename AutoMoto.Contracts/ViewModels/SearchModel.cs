@@ -31,8 +31,8 @@ namespace AutoMoto.Contracts.ViewModels
 
         public List<Manufacturer> Manufacturers { get; set; }
         public List<Models.Model> Models { get; set; }
-
-
+        public int[] SelectedFeatures { get; set; }
+        public List<Feature> Features { get; set; }
     }
 
     public class SortViewModel

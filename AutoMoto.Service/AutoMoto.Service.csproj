@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdvertisementService.cs" />
+    <Compile Include="FeatureService.cs" />
     <Compile Include="FollowingService.cs" />
     <Compile Include="ManufacturerService.cs" />
     <Compile Include="MessageService.cs" />

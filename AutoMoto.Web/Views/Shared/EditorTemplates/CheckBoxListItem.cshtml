@@ -1,0 +1,8 @@
+﻿@using AutoMoto.Contracts
+@model AutoMoto.Model.CheckBoxListItem
+<div class="feature">
+    @Html.HiddenFor(x => x.Id)
+    @Html.HiddenFor(x => x.Display)
+    @Html.BasicCheckBoxFor(x => x.IsChecked)
+    @Html.LabelFor(x => x.IsChecked, @Model.Display, new { @class = "checkbox" })
+</div>

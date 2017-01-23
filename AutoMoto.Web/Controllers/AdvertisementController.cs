@@ -2,6 +2,8 @@
 using AutoMoto.Contracts.Dtos;
 using AutoMoto.Contracts.Interfaces;
 using AutoMoto.Contracts.ViewModels;
+using AutoMoto.Model;
+using AutoMoto.Model.Models;
 using AutoMoto.Models;
 using Microsoft.AspNet.Identity;
 using PagedList;
@@ -25,14 +27,16 @@ namespace AutoMoto.Web.Controllers
         private readonly IFollowingService _followingService;
         private readonly IUserNotificationService _userNotificationService;
         private readonly IMessageService _messageService;
+        private readonly IFeatureService _featureService;
         private readonly IUnitOfWorkAsync _unitOfWorkAsync;
 
-        public AdvertisementController(IMessageService messageService, IManufacturerService manufacturerService, IModelService modelService, IUnitOfWorkAsync unitOfWorkAsync, IAdvertisementService advertisementService, IUserNotificationService userNotificationService, IFollowingService followingService)
+        public AdvertisementController(IMessageService messageService, IManufacturerService manufacturerService, IModelService modelService, IUnitOfWorkAsync unitOfWorkAsync, IAdvertisementService advertisementService, IUserNotificationService userNotificationService, IFollowingService followingService, IFeatureService featureService)
         {
             _manufacturerService = manufacturerService;
             _modelService = modelService;
             _advertisementService = advertisementService;
             _followingService = followingService;
+            _featureService = featureService;
             _userNotificationService = userNotificationService;
             _messageService = messageService;
             _unitOfWorkAsync = unitOfWorkAsync;
@@ -88,7 +92,6 @@ namespace AutoMoto.Web.Controllers
         public async Task<ActionResult> Index(SearchModel model)
         {
             await GetSearchResult(model);
-
             return View("~/Views/Advertisement/Index.cshtml", model);
 
         }
@@ -123,10 +126,15 @@ namespace AutoMoto.Web.Controllers
 
         public ActionResult Details(int id)
         {
-            var advertisement = _advertisementService.Queryable().Include(x => x.Car.Model.Manufacturer).Include(x => x.User.Address).Include(x => x.Photos).First(x => x.Id == id);
+            var advertisement = _advertisementService.Queryable().Include(x => x.Car.Model.Manufacturer).Include(x => x.User.Address).Include(x => x.Photos).Include(x => x.Car.Features).First(x => x.Id == id);
             var viewModel = new AdvertisementItemViewModel();
             viewModel.AdvertisementCurrent = advertisement;
             viewModel.User = advertisement.User;
+
+            foreach (var feature in advertisement.Car.Features)
+            {
+                viewModel.Features.Add(feature);
+            }
 
             var picturesModel = advertisement.Photos.Select(x =>
                new PictureModel()
@@ -153,6 +161,20 @@ namespace AutoMoto.Web.Controllers
         {
             var viewModel = new AdvertisementViewModel();
             viewModel.Manufacturers = _manufacturerService.Queryable().ToList();
+
+            var allFeatures = _featureService.Queryable().ToList();
+            var checkBoxListItems = new List<CheckBoxListItem>();
+
+            foreach (var feature in allFeatures)
+            {
+                checkBoxListItems.Add(new CheckBoxListItem()
+                {
+                    Id = feature.Id,
+                    Display = feature.Name,
+                    IsChecked = false
+                });
+            }
+            viewModel.Features = checkBoxListItems;
             return View("Form", viewModel);
         }
         [Authorize]
@@ -181,6 +203,12 @@ namespace AutoMoto.Web.Controllers
                 Year = viewModel.Year,
                 ObjectState = ObjectState.Added
             };
+
+            var selectedFeatureIds = viewModel.Features.Where(x => x.IsChecked).Select(x => x.Id).ToList();
+            foreach (var selectedFeatureId in selectedFeatureIds)
+            {
+                car.Features.Add(new Feature() { Id = selectedFeatureId });
+            }
             List<Photo> photos = new List<Photo>();
             foreach (var photoFile in viewModel.PhotoFiles)
             {
@@ -245,6 +273,7 @@ namespace AutoMoto.Web.Controllers
                         .Include(x => x.Car)
                         .Include(x => x.Car.Model)
                         .Include(x => x.Car.Model.Manufacturer)
+                        .Include(x => x.Car.Features)
                         .Include(x => x.User)
                         .Include(x => x.Photos)
                         .Include(x => x.User.Address)
@@ -257,6 +286,8 @@ namespace AutoMoto.Web.Controllers
                   .Include(x => x.Car.Model)
                   .Include(x => x.Car.Model.Manufacturer)
                   .Include(x => x.User)
+                                          .Include(x => x.Car.Features)
+
                                       .Include(x => x.Photos)
                   .Include(x => x.User.Address)
                   .SelectAsync();
@@ -276,6 +307,8 @@ namespace AutoMoto.Web.Controllers
                     .Include(x => x.Car.Model)
                     .Include(x => x.Car.Model.Manufacturer)
                     .Include(x => x.User)
+                    .Include(x => x.Car.Features)
+
                     .Include(x => x.Photos)
                                         .Include(x => x.User.Address)
                     .SelectAsync();
@@ -295,6 +328,27 @@ namespace AutoMoto.Web.Controllers
             if (model.PriceTo.HasValue)
                 items = items.Where(x => x.Car.Price <= model.PriceTo.Value);
 
+            if (model.SelectedFeatures != null)
+            {
+                var selectedAdvertisement = new List<Advertisement>();
+                foreach (var advertisement in items.ToList())
+                {
+                    var contains = true;
+                    foreach (var featureId in model.SelectedFeatures.ToList())
+                    {
+                        if (!advertisement.Car.Features.Select(x => x.Id).Contains(featureId))
+                        {
+                            contains = false;
+                            break;
+                        }
+                    }
+                    if (contains)
+                    {
+                        selectedAdvertisement.Add(advertisement);
+                    }
+                }
+                items = selectedAdvertisement;
+            }
 
             var itemsModelList = new List<ListingItemModel>();
             foreach (var item in items.Where(x => x.IsActive).OrderByDescending(x => x.AddedDate))
@@ -310,6 +364,9 @@ namespace AutoMoto.Web.Controllers
 
             model.Advertisements = itemsModelList;
             model.ListingsPageList = itemsModelList.ToPagedList(model.PageNumber, model.PageSize);
+            model.Features = _featureService.Queryable().ToList();
+
+
 
         }
 

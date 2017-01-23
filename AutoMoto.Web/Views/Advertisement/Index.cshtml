@@ -7,6 +7,7 @@
 }
 @section Styles {
     <link href="~/Content/PagedList.css" rel="stylesheet" />
+    <link href="~/Content/css/select2.min.css" rel="stylesheet" />
 }
 
 <div class="container-fluid body-content">
@@ -45,16 +46,18 @@
                                 <div class="form-group">
                                     <label>Cena</label>
                                     <div class="row">
-                                        <div class="col-xs-6 range-from"><input type="number" class="form-control" placeholder="Min" id="PriceFrom" name="PriceFrom" value="@Model.PriceFrom"></div>
-                                        <div class="col-xs-6 range-to"><input type="number" class="form-control" placeholder="Max" id="PriceTo" name="PriceTo" value="@Model.PriceTo"></div>
+                                        <div class="col-xs-6 range-from">
+                                            <input type="number" class="form-control" placeholder="Min" id="PriceFrom" name="PriceFrom" value="@Model.PriceFrom">
+                                        </div>
+                                        <div class="col-xs-6 range-to">
+                                            <input type="number" class="form-control" placeholder="Max" id="PriceTo" name="PriceTo" value="@Model.PriceTo">
+                                        </div>
                                     </div>
                                 </div>
-                                @*<div class="form-group">
-                                    <label>[[[Search Text]]]</label>
-                                    <input type="search" class="form-control" placeholder="[[[Search text]]]" id="SearchText" name="SearchText" value="@Model.SearchText">
-                                </div>*@
-                                @*<input type="checkbox" id="PhotoOnly" name="PhotoOnly" value="true" @( Model.PhotoOnly ? "checked" : "") />*@
-                                @*<label for="PhotoOnly">[[[Only show listings with photos]]]</label>*@
+                                <div class="form-group">
+                                    <label>Wyposażenie</label><br/>
+                                    @Html.DropDownListFor(m => m.SelectedFeatures, new SelectList(Model.Features, "Id", "Name"), new {@class= "form-control js-multiple", @multiple="multiple"})
+                                </div>
                             </fieldset>
                         </div>
                         <div class="panel-footer">
@@ -96,3 +99,10 @@
         </div>
     </div>
 </div>
+
+@section Scripts{
+    <script src="~/Scripts/select2.min.js"></script>
+<script type="text/javascript">
+    $(".js-multiple").select2();
+</script>
+}

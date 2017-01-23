@@ -12,11 +12,17 @@ namespace AutoMoto.Contracts.ViewModels
         public string UrlPicture { get; set; }
 
         public List<PictureModel> Pictures { get; set; }
+        public List<Feature> Features { get; set; }
 
 
         public AspNetUser User { get; set; }
         public string UserId { get; set; }
         public bool IsFollowing { get; set; }
+
+        public AdvertisementItemViewModel()
+        {
+            Features = new List<Feature>();
+        }
     }
 
     public class PictureModel
