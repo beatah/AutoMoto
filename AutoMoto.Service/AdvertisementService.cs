@@ -10,5 +10,6 @@ namespace AutoMoto.Service
         public AdvertisementService(IRepositoryAsync<Advertisement> repository) : base(repository)
         {
         }
+
     }
 }

@@ -1,19 +1,18 @@
 ﻿#region
 
+using Microsoft.Practices.ServiceLocation;
+using Repository.Pattern.DataContext;
+using Repository.Pattern.Infrastructure;
+using Repository.Pattern.Repositories;
+using Repository.Pattern.UnitOfWork;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Data;
 using System.Data.Common;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Practices.ServiceLocation;
-using Repository.Pattern.DataContext;
-using Repository.Pattern.Infrastructure;
-using Repository.Pattern.Repositories;
-using Repository.Pattern.UnitOfWork;
 
 #endregion
 
@@ -137,7 +136,7 @@ namespace Repository.Pattern.Ef6
 
         public void BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.Unspecified)
         {
-            _objectContext = ((IObjectContextAdapter) _dataContext).ObjectContext;
+            _objectContext = ((IObjectContextAdapter)_dataContext).ObjectContext;
             if (_objectContext.Connection.State != ConnectionState.Open)
             {
                 _objectContext.Connection.Open();

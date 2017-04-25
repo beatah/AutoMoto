@@ -62,6 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CheckBoxListItem.cs" />
+    <Compile Include="Database Objects\AutoDbContext.cs" />
+    <Compile Include="Database Objects\DatabaseExtensions.cs" />
+    <Compile Include="Database Objects\Results\ModelManufacturerResult.cs" />
     <Compile Include="Mappings\AspNetRoleMap.cs" />
     <Compile Include="Mappings\AspNetUserClaimMap.cs" />
     <Compile Include="Mappings\AspNetUserLoginMap.cs" />
@@ -190,7 +193,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Sql\Create_sp_SelectProjectsFromTwoYears.sql" />
+    <Folder Include="Sql\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Database Objects\Procedures.sql" />
+    <Content Include="Database Objects\Sequences.sql" />
+    <Content Include="Database Objects\Triggers.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

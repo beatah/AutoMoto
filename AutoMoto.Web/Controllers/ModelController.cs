@@ -1,5 +1,6 @@
 ﻿using AutoMoto.Contracts.Interfaces;
 using AutoMoto.Contracts.ViewModels;
+using AutoMoto.Service;
 using Repository.Pattern.UnitOfWork;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,25 +11,24 @@ namespace AutoMoto.Web.Controllers
 {
     public class ModelController : Controller
     {
-        private readonly IModelService _modelService;
-        private readonly IManufacturerService _manufacturerService;
-        private readonly IUnitOfWorkAsync _unitOfWorkAsync;
+        private readonly SqlDbService _sqlDbService;
 
-        public ModelController(IModelService modelService, IUnitOfWorkAsync unitOfWorkAsync, IManufacturerService manufacturerService)
+
+        public ModelController(IModelService modelService, IUnitOfWorkAsync unitOfWorkAsync, IManufacturerService manufacturerService, SqlDbService sqlDbService)
         {
-            _modelService = modelService;
-            _unitOfWorkAsync = unitOfWorkAsync;
-            _manufacturerService = manufacturerService;
+            _sqlDbService = sqlDbService;
         }
         public ActionResult Index()
         {
-            var models =
-                _modelService.Queryable()
-                    .GroupBy(m => m.Manufacturer)
+            var list =
+                _sqlDbService.GetAllModels().ToList();
+            var group = list
+                    .GroupBy(m => m.Manufacturer);
+            var models = group
                     .Select(m => new { i = m.Key.Name, j = m.Key.Models.OrderBy(x => x.Name).ToList() })
                     .OrderBy(x => x.i)
                     .ToDictionary(x => x.i, x => x.j);
-            var newManufacturers = _manufacturerService.Queryable().Where(x => x.Models.Count == 0).ToList();
+            var newManufacturers = _sqlDbService.GetAllManufactures().Where(x => x.Models.Count == 0).ToList();
             if (newManufacturers.Any())
             {
                 foreach (var manufacturer in newManufacturers)
@@ -52,15 +52,7 @@ namespace AutoMoto.Web.Controllers
             {
                 return View("Create", viewModel);
             }
-            var manufacturer = await _manufacturerService.Query(x => x.Name == viewModel.Manufacturer).SelectAsync();
-            var entity = new AutoMoto.Models.Model()
-            {
-                Name = viewModel.Name,
-                ManufacturerId = manufacturer.First().Id
-            };
-            _modelService.Insert(entity);
-
-            await _unitOfWorkAsync.SaveChangesAsync();
+            _sqlDbService.InsertModel(viewModel.Name, viewModel.Manufacturer);
 
             return RedirectToAction("Index");
         }

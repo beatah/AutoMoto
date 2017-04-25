@@ -2,7 +2,7 @@
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
 using AutoMoto.Contracts.Interfaces;
-using AutoMoto.Model.Models;
+using AutoMoto.Model;
 using AutoMoto.Service;
 using Repository.Pattern.DataContext;
 using Repository.Pattern.Ef6;
@@ -41,6 +41,7 @@ namespace AutoMoto.Web.App_Start
 
 
             builder.RegisterType<AutoDbContext>().As<IDataContextAsync>().InstancePerRequest();
+            builder.RegisterType<AutoDbContext>().As<IAutoStoredDbContext>().InstancePerRequest();
             builder.RegisterGeneric(typeof(Repository<>)).As(typeof(IRepositoryAsync<>)).InstancePerRequest();
             builder.RegisterType<UnitOfWork>().As<IUnitOfWorkAsync>().InstancePerRequest();
 
@@ -54,6 +55,7 @@ namespace AutoMoto.Web.App_Start
             builder.RegisterType<AddressService>().As<IAddressService>().InstancePerRequest();
             builder.RegisterType<FeatureService>().As<IFeatureService>().InstancePerRequest();
             builder.RegisterType<UserService>().As<IUserService>().InstancePerRequest();
+            builder.RegisterType<SqlDbService>().As<SqlDbService>().InstancePerRequest();
 
 
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());

@@ -94,7 +94,7 @@ namespace AutoMoto.Web.Controllers
                     .Include(x => x.Car.Model.Manufacturer)
                     .Include(x => x.User)
                     .Include(x => x.Photos)
-                                        .Include(x => x.User.Address)
+                    .Include(x => x.User.Address)
                     .SelectAsync();
             }
 

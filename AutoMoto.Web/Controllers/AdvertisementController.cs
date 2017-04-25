@@ -5,6 +5,7 @@ using AutoMoto.Contracts.ViewModels;
 using AutoMoto.Model;
 using AutoMoto.Model.Models;
 using AutoMoto.Models;
+using AutoMoto.Service;
 using Microsoft.AspNet.Identity;
 using PagedList;
 using Repository.Pattern.Infrastructure;
@@ -29,26 +30,46 @@ namespace AutoMoto.Web.Controllers
         private readonly IMessageService _messageService;
         private readonly IFeatureService _featureService;
         private readonly IUnitOfWorkAsync _unitOfWorkAsync;
+        private readonly SqlDbService _sqlDbService;
 
-        public AdvertisementController(IMessageService messageService, IManufacturerService manufacturerService, IModelService modelService, IUnitOfWorkAsync unitOfWorkAsync, IAdvertisementService advertisementService, IUserNotificationService userNotificationService, IFollowingService followingService, IFeatureService featureService)
+
+        public AdvertisementController(IMessageService messageService, IManufacturerService manufacturerService, IModelService modelService, IUnitOfWorkAsync unitOfWorkAsync, IAdvertisementService advertisementService, IUserNotificationService userNotificationService, IFollowingService followingService, IFeatureService featureService, SqlDbService sqlDbService)
         {
             _manufacturerService = manufacturerService;
             _modelService = modelService;
             _advertisementService = advertisementService;
             _followingService = followingService;
             _featureService = featureService;
+            _sqlDbService = sqlDbService;
             _userNotificationService = userNotificationService;
             _messageService = messageService;
             _unitOfWorkAsync = unitOfWorkAsync;
         }
 
+        #region done
+
+
+        [HttpPost]
+        public async Task<ActionResult> Delete(int id)
+        {
+            _sqlDbService.DeleteAdvertisement(id);
+
+            return RedirectToAction("Index");
+        }
+
+
+
+        public JsonResult FillModels(int manufacturer)
+        {
+            var models =
+               _sqlDbService.GetModelsByManufacturer(manufacturer).ToList();
+            return Json(models, JsonRequestBehavior.AllowGet);
+        }
         public async Task<ActionResult> ContactUser(ContactDto model)
         {
-            var advertisement = await _advertisementService.FindAsync(model.AdvertisementId);
+            var advertisement = _sqlDbService.GetAdvertisementById(model.AdvertisementId);
 
             var userIdCurrent = User.Identity.GetUserId();
-
-
 
             if (advertisement.UserId == userIdCurrent)
             {
@@ -57,37 +78,12 @@ namespace AutoMoto.Web.Controllers
                 return RedirectToAction("Details", "Advertisement", new { id = model.AdvertisementId });
             }
 
-
-            var message = new Message()
-            {
-                FromUserId = userIdCurrent,
-                ToUserId = advertisement.UserId,
-                Content = model.Message,
-                AdvertisementId = advertisement.Id
-            };
-
-            _messageService.Insert(message);
-            var messageNotification = new MessageNotification() { Message = message, DateTime = DateTime.Now, ObjectState = ObjectState.Added };
-
-            var userNotification = new UserNotification()
-            {
-
-                IsRead = false,
-                Notification = messageNotification,
-                UserId = message.ToUserId,
-                ObjectState = ObjectState.Added
-            };
-            _userNotificationService.Insert(userNotification);
-
-
-            await _unitOfWorkAsync.SaveChangesAsync();
-
+            _sqlDbService.NewMessage(userIdCurrent, advertisement.UserId, model.Message, advertisement.Id);
 
             TempData[TempKeys.UserMessage] = "Wiadomość wysłana!";
 
             return RedirectToAction("Details", "Advertisement", new { id = model.AdvertisementId });
         }
-
 
         public async Task<ActionResult> Index(SearchModel model)
         {
@@ -95,6 +91,35 @@ namespace AutoMoto.Web.Controllers
             return View("~/Views/Advertisement/Index.cshtml", model);
 
         }
+
+
+        [Authorize]
+        public ActionResult Create()
+        {
+            var viewModel = new AdvertisementViewModel();
+            viewModel.Manufacturers = _sqlDbService.GetAllManufactures().ToList();
+
+            var allFeatures = _sqlDbService.GetAllFeatures().ToList();
+            var checkBoxListItems = new List<CheckBoxListItem>();
+
+            foreach (var feature in allFeatures)
+            {
+                checkBoxListItems.Add(new CheckBoxListItem()
+                {
+                    Id = feature.Id,
+                    Display = feature.Name,
+                    IsChecked = false
+                });
+            }
+            viewModel.Features = checkBoxListItems;
+            return View("Form", viewModel);
+        }
+
+        #endregion
+
+
+
+
         public async Task<ActionResult> Mine()
         {
             var userId = User.Identity.GetUserId();
@@ -156,34 +181,14 @@ namespace AutoMoto.Web.Controllers
             return View(viewModel);
         }
 
-        [Authorize]
-        public ActionResult Create()
-        {
-            var viewModel = new AdvertisementViewModel();
-            viewModel.Manufacturers = _manufacturerService.Queryable().ToList();
 
-            var allFeatures = _featureService.Queryable().ToList();
-            var checkBoxListItems = new List<CheckBoxListItem>();
-
-            foreach (var feature in allFeatures)
-            {
-                checkBoxListItems.Add(new CheckBoxListItem()
-                {
-                    Id = feature.Id,
-                    Display = feature.Name,
-                    IsChecked = false
-                });
-            }
-            viewModel.Features = checkBoxListItems;
-            return View("Form", viewModel);
-        }
         [Authorize]
         [HttpPost]
         public async Task<ActionResult> Create(AdvertisementViewModel viewModel)
         {
             if (!ModelState.IsValid || viewModel.PhotoFiles == null || viewModel.PhotoFiles.First() == null)
             {
-                viewModel.Manufacturers = _manufacturerService.Queryable().ToList();
+                viewModel.Manufacturers = _sqlDbService.GetAllManufactures().ToList();
                 if (viewModel.PhotoFiles == null || viewModel.PhotoFiles.First() == null)
                 {
                     TempData[TempKeys.UserMessageAlertState] = "bg-danger";
@@ -253,12 +258,7 @@ namespace AutoMoto.Web.Controllers
             return RedirectToAction("Details", "Advertisement", new { id = advertisement.Id });
 
         }
-        public JsonResult FillModels(int manufacturer)
-        {
-            var models =
-                _modelService.Queryable().Where(x => x.ManufacturerId == manufacturer).ToList();
-            return Json(models, JsonRequestBehavior.AllowGet);
-        }
+
         private async Task GetSearchResult(SearchModel model)
         {
             IEnumerable<Advertisement> items = null;
@@ -396,17 +396,6 @@ namespace AutoMoto.Web.Controllers
 
             return View("~/Views/Advertisement/Profile.cshtml", model);
         }
-        [HttpPost]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var advertisement = await _advertisementService.FindAsync(id);
-            advertisement.IsActive = false;
-            advertisement.ObjectState = ObjectState.Modified;
 
-            await _unitOfWorkAsync.SaveChangesAsync();
-
-
-            return RedirectToAction("Index");
-        }
     }
 }

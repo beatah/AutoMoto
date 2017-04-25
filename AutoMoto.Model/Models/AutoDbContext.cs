@@ -1,10 +1,11 @@
 ﻿using AutoMoto.Model.Mappings;
 using AutoMoto.Model.Migrations;
+using AutoMoto.Model.Models;
 using AutoMoto.Models;
 using Repository.Pattern.Ef6;
 using System.Data.Entity;
 
-namespace AutoMoto.Model.Models
+namespace AutoMoto.Model
 {
     public partial class AutoDbContext : DataContext
     {
