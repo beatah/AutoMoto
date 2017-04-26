@@ -73,6 +73,122 @@ namespace AutoMoto.Service
         {
             _storedProcedures.ChangeManufacturerStatus(id, status);
         }
+
+
+        public IEnumerable<Advertisement> GetAllAdvertisementsWithDetails()
+        {
+            var all = _storedProcedures.GetAllAdvertisementsWithDetails();
+            return AdvertisementResultToEntity(all.ToList());
+        }
+        public IEnumerable<Advertisement> GetAllAdvertisementsWithDetailsByUser(string userId)
+        {
+            var all = _storedProcedures.GetAllAdvertisementsWithDetailsByUser(userId);
+            return AdvertisementResultToEntity(all.ToList());
+        }
+
+        public IEnumerable<Notification> GetNewNotificationsFor(string userId)
+        {
+            var all = _storedProcedures.GetNewNotificationsFor(userId);
+            return
+                all.Select(
+                    x =>
+                        new FollowingNotification()
+                        {
+                            AdvertisementId = x.AdvertisementId,
+                            Advertisement = new Advertisement()
+                            {
+                                Title = x.Title,
+                                Id = x.AdvertisementId,
+                                User = new AspNetUser() { FirstName = x.FirstName, LastName = x.LastName }
+                            },
+                            Id = x.Id,
+                            DateTime = x.DateTime
+                        });
+        }
+
+        public Advertisement GetAllAdvertisementsWithDetailsById(int id)
+        {
+            var all = _storedProcedures.GetAllAdvertisementsWithDetailsById(id);
+            return AdvertisementResultToEntity(all.ToList()).First();
+        }
+
+        public bool IsFollowingExists(string followerId, string followeeId)
+        {
+            return _storedProcedures.CountFollowing(followerId, followeeId) == 1;
+        }
+
+        public void InsertFollowing(string followerId, string followeeId)
+        {
+            _storedProcedures.InsertFollowing(followerId, followeeId);
+        }
+        public void DeleteFollowing(string followerId, string followeeId)
+        {
+            _storedProcedures.DeleteFollowing(followerId, followeeId);
+        }
+        public void MarkAsRead(string userId)
+        {
+            _storedProcedures.MarkAsRead(userId);
+        }
+        //public Following GetFollowing(string followerId, string followeeId)
+        //{
+        //    return _storedProcedures.GetFollowing(followerId, followeeId).First();
+        //}
+
+
+        private static List<Advertisement> AdvertisementResultToEntity(List<Model.Database_Objects.Results.AdvertisementDetailsResult> all)
+        {
+            var advertisements = all.GroupBy(p => p.Id)
+                            .Select(g => g.First())
+                            .Select(x => new Advertisement()
+                            {
+                                Id = x.Id,
+                                Title = x.Title,
+                                Description = x.Description,
+                                IsActive = x.IsActive,
+                                AddedDate = x.AddedDate,
+                                Car = new Car()
+                                {
+                                    EngineCap = x.EngineCap,
+                                    FuelType = x.FuelType,
+                                    Mileage = x.Mileage,
+                                    ModelId = x.ModelId,
+                                    Model = new Models.Model()
+                                    {
+                                        Id = x.ModelId,
+                                        Name = x.ModelName,
+                                        ManufacturerId = x.ManufacturerId,
+                                        Manufacturer = new Manufacturer()
+                                        {
+                                            Id = x.ManufacturerId,
+                                            Name = x.ManufacturerName
+                                        }
+                                    },
+                                    Price = x.Price,
+                                    Year = x.Year
+                                },
+                                UserId = x.UserId,
+                                User =
+                                    new AspNetUser()
+                                    {
+                                        FirstName = x.FirstName,
+                                        LastName = x.LastName,
+                                        Id = x.UserId,
+                                        AddressId = x.AddressId,
+                                        Address = new Address() { Id = x.AddressId, City = x.City }
+                                    },
+                            }).ToList();
+            foreach (var advertisement in advertisements)
+            {
+                advertisement.Photos =
+                    all.Where(x => x.Id == advertisement.Id)
+                        .Select(x => new Photo() { Content = x.Content, Extension = x.Extension })
+                        .ToList();
+            }
+
+            return advertisements;
+        }
+
+
         //public List<DayUser> UserDaysBetweenTwoYears(string userId, int fromDay1, int toDay1, int toDay2, int year)
         //{
         //    return _storedProcedures.UserDaysBetweenTwoYears(userId, fromDay1, toDay1, toDay2, year)

@@ -64,7 +64,9 @@
     <Compile Include="CheckBoxListItem.cs" />
     <Compile Include="Database Objects\AutoDbContext.cs" />
     <Compile Include="Database Objects\DatabaseExtensions.cs" />
+    <Compile Include="Database Objects\Results\AdvertisementDetailsResult.cs" />
     <Compile Include="Database Objects\Results\ModelManufacturerResult.cs" />
+    <Compile Include="Database Objects\Results\NewFollowingNotificationResult.cs" />
     <Compile Include="Mappings\AspNetRoleMap.cs" />
     <Compile Include="Mappings\AspNetUserClaimMap.cs" />
     <Compile Include="Mappings\AspNetUserLoginMap.cs" />

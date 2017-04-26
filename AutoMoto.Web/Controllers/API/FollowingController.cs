@@ -1,8 +1,6 @@
 ﻿using AutoMoto.Contracts.Dtos;
-using AutoMoto.Contracts.Interfaces;
-using AutoMoto.Models;
+using AutoMoto.Service;
 using Microsoft.AspNet.Identity;
-using Repository.Pattern.UnitOfWork;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -10,31 +8,23 @@ namespace AutoMoto.Web.Controllers.API
 {
     public class FollowingController : ApiController
     {
-        private readonly IFollowingService _followingService;
-        private readonly IUnitOfWorkAsync _unitOfWorkAsync;
+        private readonly SqlDbService _sqlDbService;
 
-        public FollowingController(IFollowingService followingService, IUnitOfWorkAsync unitOfWorkAsync)
+        public FollowingController(SqlDbService sqlDbService)
         {
-            _followingService = followingService;
-            _unitOfWorkAsync = unitOfWorkAsync;
+            _sqlDbService = sqlDbService;
         }
 
         [HttpPost]
         public async Task<IHttpActionResult> Follow(FollowingDto dto)
         {
             var userId = User.Identity.GetUserId();
+            var isExists = _sqlDbService.IsFollowingExists(userId, dto.FolloweeId);
 
-            var following = _followingService.GetFollowing(userId, dto.FolloweeId);
-            if (following != null)
+            if (isExists)
                 return BadRequest("Obserwowanie już istnieje");
 
-            following = new Following
-            {
-                FollowerId = userId,
-                FolloweeId = dto.FolloweeId
-            };
-            _followingService.Insert(following);
-            await _unitOfWorkAsync.SaveChangesAsync();
+            _sqlDbService.InsertFollowing(userId, dto.FolloweeId);
 
             return Ok();
         }
@@ -43,13 +33,7 @@ namespace AutoMoto.Web.Controllers.API
         {
             var userId = User.Identity.GetUserId();
 
-            var following = _followingService.GetFollowing(userId, id);
-
-            if (following == null)
-                return NotFound();
-
-            _followingService.Delete(following);
-            await _unitOfWorkAsync.SaveChangesAsync();
+            _sqlDbService.DeleteFollowing(userId, id);
 
             return Ok(id);
         }

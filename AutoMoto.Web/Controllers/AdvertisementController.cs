@@ -12,7 +12,6 @@ using Repository.Pattern.Infrastructure;
 using Repository.Pattern.UnitOfWork;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,9 +45,91 @@ namespace AutoMoto.Web.Controllers
             _unitOfWorkAsync = unitOfWorkAsync;
         }
 
-        #region done
+
+        private async Task GetSearchResult(SearchModel model)
+        {
+            IEnumerable<Advertisement> items = _sqlDbService.GetAllAdvertisementsWithDetails();
+
+            // Category
+            if (model.ManufacturerId != 0)
+            {
+
+                if (model.ModelId != 0)
+                {
+                    items = items.Where(x => x.Car.Model.Id == model.ModelId);
+                }
+                else
+                {
+                    items = items.Where(x => x.Car.Model.ManufacturerId == model.ManufacturerId);
+
+                }
+                model.Models = _sqlDbService.GetModelsByManufacturer(model.ManufacturerId).ToList();
 
 
+            }
+
+            // Latest
+            if (items == null)
+            {
+                items = items.OrderByDescending(x => x.AddedDate);
+
+            }
+
+
+            // Location
+            if (!string.IsNullOrEmpty(model.Location))
+            {
+                items = items.Where(x => !string.IsNullOrEmpty(x.User.Address.City) && string.Compare(x.User.Address.City.ToLower(), model.Location.ToLower(), CultureInfo.InvariantCulture, CompareOptions.IgnoreNonSpace) == 0);
+            }
+
+
+            if (model.PriceFrom.HasValue)
+                items = items.Where(x => x.Car.Price >= model.PriceFrom.Value);
+
+            if (model.PriceTo.HasValue)
+                items = items.Where(x => x.Car.Price <= model.PriceTo.Value);
+
+            //if (model.SelectedFeatures != null)
+            //{
+            //    var selectedAdvertisement = new List<Advertisement>();
+            //    foreach (var advertisement in items.ToList())
+            //    {
+            //        var contains = true;
+            //        foreach (var featureId in model.SelectedFeatures.ToList())
+            //        {
+            //            if (!advertisement.Car.Features.Select(x => x.Id).Contains(featureId))
+            //            {
+            //                contains = false;
+            //                break;
+            //            }
+            //        }
+            //        if (contains)
+            //        {
+            //            selectedAdvertisement.Add(advertisement);
+            //        }
+            //    }
+            //    items = selectedAdvertisement;
+            //}
+
+            var itemsModelList = new List<ListingItemModel>();
+            foreach (var item in items.Where(x => x.IsActive).OrderByDescending(x => x.AddedDate))
+            {
+                itemsModelList.Add(new ListingItemModel()
+                {
+                    ListingCurrent = item,
+                    UrlPicture = item.Photos.Count == 0 ? "" : string.Format("data:{0};base64,{1}", item.Photos.First().Extension, Convert.ToBase64String(item.Photos.First().Content))
+                });
+            }
+
+            model.Manufacturers = _manufacturerService.Queryable().ToList();
+
+            model.Advertisements = itemsModelList;
+            model.ListingsPageList = itemsModelList.ToPagedList(model.PageNumber, model.PageSize);
+            model.Features = _featureService.Queryable().ToList();
+
+
+
+        }
         [HttpPost]
         public async Task<ActionResult> Delete(int id)
         {
@@ -115,22 +196,13 @@ namespace AutoMoto.Web.Controllers
             return View("Form", viewModel);
         }
 
-        #endregion
-
 
 
 
         public async Task<ActionResult> Mine()
         {
             var userId = User.Identity.GetUserId();
-            var items = await _advertisementService.Query(x => x.UserId == userId)
-                        .Include(x => x.Car)
-                        .Include(x => x.Car.Model)
-                        .Include(x => x.Car.Model.Manufacturer)
-                        .Include(x => x.User)
-                        .Include(x => x.Photos)
-                        .Include(x => x.User.Address)
-                        .SelectAsync();
+            var items = _sqlDbService.GetAllAdvertisementsWithDetailsByUser(userId);
             var itemsModelList = new List<ListingItemModel>();
             foreach (var item in items.Where(x => x.IsActive).OrderByDescending(x => x.AddedDate))
             {
@@ -151,15 +223,15 @@ namespace AutoMoto.Web.Controllers
 
         public ActionResult Details(int id)
         {
-            var advertisement = _advertisementService.Queryable().Include(x => x.Car.Model.Manufacturer).Include(x => x.User.Address).Include(x => x.Photos).Include(x => x.Car.Features).First(x => x.Id == id);
+            var advertisement = _sqlDbService.GetAllAdvertisementsWithDetailsById(id);
             var viewModel = new AdvertisementItemViewModel();
             viewModel.AdvertisementCurrent = advertisement;
             viewModel.User = advertisement.User;
 
-            foreach (var feature in advertisement.Car.Features)
-            {
-                viewModel.Features.Add(feature);
-            }
+            //foreach (var feature in advertisement.Car.Features)
+            //{
+            //    viewModel.Features.Add(feature);
+            //}
 
             var picturesModel = advertisement.Photos.Select(x =>
                new PictureModel()
@@ -175,7 +247,7 @@ namespace AutoMoto.Web.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 viewModel.UserId = User.Identity.GetUserId();
-                viewModel.IsFollowing = _followingService.GetFollowing(viewModel.UserId, advertisement.UserId) != null;
+                viewModel.IsFollowing = _sqlDbService.IsFollowingExists(viewModel.UserId, advertisement.UserId);
             }
 
             return View(viewModel);
@@ -259,128 +331,12 @@ namespace AutoMoto.Web.Controllers
 
         }
 
-        private async Task GetSearchResult(SearchModel model)
-        {
-            IEnumerable<Advertisement> items = null;
 
-            // Category
-            if (model.ManufacturerId != 0)
-            {
-
-                if (model.ModelId != 0)
-                {
-                    items = await _advertisementService.Query(x => x.Car.Model.Id == model.ModelId)
-                        .Include(x => x.Car)
-                        .Include(x => x.Car.Model)
-                        .Include(x => x.Car.Model.Manufacturer)
-                        .Include(x => x.Car.Features)
-                        .Include(x => x.User)
-                        .Include(x => x.Photos)
-                        .Include(x => x.User.Address)
-                        .SelectAsync();
-                }
-                else
-                {
-                    items = await _advertisementService.Query(x => x.Car.Model.ManufacturerId == model.ManufacturerId)
-                  .Include(x => x.Car)
-                  .Include(x => x.Car.Model)
-                  .Include(x => x.Car.Model.Manufacturer)
-                  .Include(x => x.User)
-                                          .Include(x => x.Car.Features)
-
-                                      .Include(x => x.Photos)
-                  .Include(x => x.User.Address)
-                  .SelectAsync();
-                }
-                model.Models = _modelService.Queryable().Where(x => x.ManufacturerId == model.ManufacturerId).ToList();
-
-
-            }
-
-
-
-            // Latest
-            if (items == null)
-            {
-                items = await _advertisementService.Query().OrderBy(x => x.OrderByDescending(y => y.AddedDate))
-                    .Include(x => x.Car)
-                    .Include(x => x.Car.Model)
-                    .Include(x => x.Car.Model.Manufacturer)
-                    .Include(x => x.User)
-                    .Include(x => x.Car.Features)
-
-                    .Include(x => x.Photos)
-                                        .Include(x => x.User.Address)
-                    .SelectAsync();
-            }
-
-
-            // Location
-            if (!string.IsNullOrEmpty(model.Location))
-            {
-                items = items.Where(x => !string.IsNullOrEmpty(x.User.Address.City) && string.Compare(x.User.Address.City.ToLower(), model.Location.ToLower(), CultureInfo.InvariantCulture, CompareOptions.IgnoreNonSpace) == 0);
-            }
-
-
-            if (model.PriceFrom.HasValue)
-                items = items.Where(x => x.Car.Price >= model.PriceFrom.Value);
-
-            if (model.PriceTo.HasValue)
-                items = items.Where(x => x.Car.Price <= model.PriceTo.Value);
-
-            if (model.SelectedFeatures != null)
-            {
-                var selectedAdvertisement = new List<Advertisement>();
-                foreach (var advertisement in items.ToList())
-                {
-                    var contains = true;
-                    foreach (var featureId in model.SelectedFeatures.ToList())
-                    {
-                        if (!advertisement.Car.Features.Select(x => x.Id).Contains(featureId))
-                        {
-                            contains = false;
-                            break;
-                        }
-                    }
-                    if (contains)
-                    {
-                        selectedAdvertisement.Add(advertisement);
-                    }
-                }
-                items = selectedAdvertisement;
-            }
-
-            var itemsModelList = new List<ListingItemModel>();
-            foreach (var item in items.Where(x => x.IsActive).OrderByDescending(x => x.AddedDate))
-            {
-                itemsModelList.Add(new ListingItemModel()
-                {
-                    ListingCurrent = item,
-                    UrlPicture = item.Photos.Count == 0 ? "" : string.Format("data:{0};base64,{1}", item.Photos.First().Extension, Convert.ToBase64String(item.Photos.First().Content))
-                });
-            }
-
-            model.Manufacturers = _manufacturerService.Queryable().ToList();
-
-            model.Advertisements = itemsModelList;
-            model.ListingsPageList = itemsModelList.ToPagedList(model.PageNumber, model.PageSize);
-            model.Features = _featureService.Queryable().ToList();
-
-
-
-        }
 
         public async Task<ActionResult> Profile(string id)
         {
 
-            var items = await _advertisementService.Query(x => x.UserId == id)
-                        .Include(x => x.Car)
-                        .Include(x => x.Car.Model)
-                        .Include(x => x.Car.Model.Manufacturer)
-                        .Include(x => x.User)
-                        .Include(x => x.Photos)
-                        .Include(x => x.User.Address)
-                        .SelectAsync();
+            var items = _sqlDbService.GetAllAdvertisementsWithDetailsByUser(id);
             var itemsModelList = new List<ListingItemModel>();
             foreach (var item in items.Where(x => x.IsActive).OrderByDescending(x => x.AddedDate))
             {

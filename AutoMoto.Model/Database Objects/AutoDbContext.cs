@@ -28,6 +28,22 @@ namespace AutoMoto.Model
         {
             return Database.SqlQuerySmart<ModelManufacturerResult>("[sp_GetAllModels]");
         }
+        public IEnumerable<AdvertisementDetailsResult> GetAllAdvertisementsWithDetails()
+        {
+            return Database.SqlQuerySmart<AdvertisementDetailsResult>("[sp_GetAllAdvertDetails]");
+        }
+
+        public IEnumerable<AdvertisementDetailsResult> GetAllAdvertisementsWithDetailsById(int id)
+        {
+            return Database.SqlQuerySmart<AdvertisementDetailsResult>("[sp_GetAllAdvertDetailsById]", new { id });
+        }
+
+        public IEnumerable<AdvertisementDetailsResult> GetAllAdvertisementsWithDetailsByUser(string userId)
+        {
+            return Database.SqlQuerySmart<AdvertisementDetailsResult>("[sp_GetAllAdvertDetailsByUser]", new { userId });
+        }
+
+
         public IEnumerable<Feature> GetAllFeatures()
         {
             return Database.SqlQuerySmart<Feature>("[sp_GetAllFeatures]");
@@ -58,10 +74,43 @@ namespace AutoMoto.Model
         {
             Database.ExecuteSqlCommandSmart("[sp_InsertModel]", new { name, manufacturerName });
         }
+        public int CountFollowing(string followerId, string followeeId)
+        {
+            return Database.SqlQuerySmart<int>("[sp_FollowersCountByFollowee]", new { followerId, followeeId }).First();
+        }
+        public IEnumerable<Following> GetFollowing(string followerId, string followeeId)
+        {
+            return Database.SqlQuerySmart<Following>("[sp_GetFollowing]", new { followerId, followeeId });
+        }
+        public IEnumerable<NewFollowingNotificationResult> GetNewNotificationsFor(string userId)
+        {
+            return Database.SqlQuerySmart<NewFollowingNotificationResult>("[sp_GetUnreadForUser]", new { userId });
+        }
+        public void InsertFollowing(string followerId, string followeeId)
+        {
+            Database.ExecuteSqlCommandSmart("[sp_InsertFollowing]", new { followerId, followeeId });
+        }
+        public void DeleteFollowing(string followerId, string followeeId)
+        {
+            Database.ExecuteSqlCommandSmart("[sp_DeleteFollowing]", new { followerId, followeeId });
+        }
+        public void MarkAsRead(string userId)
+        {
+            Database.ExecuteSqlCommandSmart("[sp_MarkAsRead]", new { userId });
+        }
     }
 
     public interface IAutoStoredDbContext
     {
+        IEnumerable<NewFollowingNotificationResult> GetNewNotificationsFor(string userId);
+        void MarkAsRead(string userId);
+        void InsertFollowing(string followerId, string followeeId);
+        void DeleteFollowing(string followerId, string followeeId);
+        IEnumerable<Following> GetFollowing(string followerId, string followeeId);
+        int CountFollowing(string followerId, string followeeId);
+        IEnumerable<AdvertisementDetailsResult> GetAllAdvertisementsWithDetails();
+        IEnumerable<AdvertisementDetailsResult> GetAllAdvertisementsWithDetailsById(int id);
+        IEnumerable<AdvertisementDetailsResult> GetAllAdvertisementsWithDetailsByUser(string userId);
         void InsertModel(string name, string manufacturerName);
         void InsertManufacturer(string name);
         IEnumerable<Feature> GetAllFeatures();

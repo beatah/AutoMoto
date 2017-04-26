@@ -1,9 +1,7 @@
-﻿using AutoMoto.Contracts.Interfaces;
-using AutoMoto.Models;
+﻿using AutoMoto.Models;
+using AutoMoto.Service;
 using Microsoft.AspNet.Identity;
-using Repository.Pattern.UnitOfWork;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -12,18 +10,15 @@ namespace AutoMoto.Web.Controllers.API
 {
     public class NotificationsController : ApiController
     {
-        private readonly IUnitOfWorkAsync _unitOfWork;
-        private readonly IUserNotificationService _userNotificationService;
-
-        public NotificationsController(IUnitOfWorkAsync unitOfWork, IUserNotificationService userNotificationService)
+        private readonly SqlDbService _sqlDbService;
+        public NotificationsController(SqlDbService sqlDbService)
         {
-            _unitOfWork = unitOfWork;
-            _userNotificationService = userNotificationService;
+            _sqlDbService = sqlDbService;
         }
         public List<Notification> GetNewNotifications()
         {
             var userId = User.Identity.GetUserId();
-            List<Notification> notifications = _userNotificationService.GetNewNotificationsFor(userId).Select(x => x.Notification).OfType<FollowingNotification>().Include(x => x.Advertisement).Include(x => x.Advertisement.User).Cast<Notification>().ToList();
+            List<Notification> notifications = _sqlDbService.GetNewNotificationsFor(userId).ToList();
             return notifications;
         }
 
@@ -31,19 +26,7 @@ namespace AutoMoto.Web.Controllers.API
         public async Task<IHttpActionResult> MarkAsRead()
         {
             var userId = User.Identity.GetUserId();
-            var notifications = _userNotificationService.Queryable().Where(x => x.UserId == userId).Include(x => x.Notification).ToList();
-
-            foreach (var userNotification in notifications)
-            {
-                if (userNotification.Notification is FollowingNotification)
-                {
-                    userNotification.IsRead = true;
-                    _userNotificationService.Update(userNotification);
-                }
-
-            }
-
-            await _unitOfWork.SaveChangesAsync();
+            _sqlDbService.MarkAsRead(userId);
             return Ok();
         }
     }

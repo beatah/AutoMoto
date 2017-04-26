@@ -192,3 +192,157 @@ END
 
 
 go
+
+
+CREATE PROCEDURE [sp_GetAllAdvertDetails]
+AS
+BEGIN
+SELECT a.Id,a.Title,a.Description,a.IsActive,a.AddedDate,c.EngineCap,a.UserId,
+c.FuelType,c.Mileage,c.ModelId,c.Price,c.Year,mo.Name as ModelName,
+mo.ManufacturerId, ma.Name as ManufacturerName,
+u.FirstName,u.LastName,u.AddressId, ad.City, p.Content,p.Extension
+FROM Advertisements a
+INNER JOIN Cars c on c.Id = a.Id
+INNER JOIN Models mo on mo.Id = c.ModelId
+INNER JOIN Manufacturers ma on ma.Id = mo.ManufacturerId
+INNER JOIN AspNetUsers u on a.UserId = u.Id
+INNER JOIN Addresses ad on u.AddressId= ad.Id
+INNER JOIN Photos p on p.Advertisement_Id = a.Id
+END
+
+go
+
+CREATE PROCEDURE [sp_GetAllAdvertDetailsByUser]
+(
+@userId NVARCHAR(128)
+)
+AS
+BEGIN
+SELECT a.Id,a.Title,a.Description,a.IsActive,a.AddedDate,c.EngineCap,a.UserId,
+c.FuelType,c.Mileage,c.ModelId,c.Price,c.Year,mo.Name as ModelName,
+mo.ManufacturerId, ma.Name as ManufacturerName,
+u.FirstName,u.LastName,u.AddressId, ad.City, p.Content,p.Extension
+FROM Advertisements a
+INNER JOIN Cars c on c.Id = a.Id
+INNER JOIN Models mo on mo.Id = c.ModelId
+INNER JOIN Manufacturers ma on ma.Id = mo.ManufacturerId
+INNER JOIN AspNetUsers u on a.UserId = u.Id
+INNER JOIN Addresses ad on u.AddressId= ad.Id
+INNER JOIN Photos p on p.Advertisement_Id = a.Id
+WHERE A.UserId = @userId
+END
+
+
+go
+
+CREATE PROCEDURE [sp_GetAllAdvertDetailsById]
+(
+@id INT
+)
+AS
+BEGIN
+SELECT a.Id,a.Title,a.Description,a.IsActive,a.AddedDate,c.EngineCap,a.UserId,
+c.FuelType,c.Mileage,c.ModelId,c.Price,c.Year,mo.Name as ModelName,
+mo.ManufacturerId, ma.Name as ManufacturerName,
+u.FirstName,u.LastName,u.AddressId, ad.City, p.Content,p.Extension
+FROM Advertisements a
+INNER JOIN Cars c on c.Id = a.Id
+INNER JOIN Models mo on mo.Id = c.ModelId
+INNER JOIN Manufacturers ma on ma.Id = mo.ManufacturerId
+INNER JOIN AspNetUsers u on a.UserId = u.Id
+INNER JOIN Addresses ad on u.AddressId= ad.Id
+INNER JOIN Photos p on p.Advertisement_Id = a.Id
+WHERE A.Id = @id
+END
+
+go
+
+CREATE PROCEDURE [sp_FollowersCountByFollowee]
+(
+@followerId NVARCHAR(128),
+@followeeId NVARCHAR(128)
+)
+AS
+BEGIN
+SELECT COUNT(*)
+FROM Followings
+WHERE FollowerId=@followerId AND FolloweeId=@followeeId
+END
+
+go
+
+CREATE PROCEDURE [sp_InsertFollowing]
+(
+@followerId NVARCHAR(128),
+@followeeId NVARCHAR(128)
+)
+AS
+BEGIN
+INSERT INTO FOLLOWINGS(FollowerId,FolloweeId)
+VALUES (@followerId,@followeeId);
+END
+
+
+
+
+go
+
+CREATE PROCEDURE [sp_DeleteFollowing]
+(
+@followerId NVARCHAR(128),
+@followeeId NVARCHAR(128)
+)
+AS
+BEGIN
+delete from FOLLOWINGS(FollowerId,FolloweeId)
+where FollowerId=@followerId AND FolloweeId=@followeeId
+END
+
+
+GO
+
+CREATE PROCEDURE [sp_MarkAsRead]
+(
+@userId NVARCHAR(128)
+)
+AS
+BEGIN
+	UPDATE UserNotifications
+	SET IsRead = 1
+	WHERE UserId=@userId
+END
+
+
+GO 
+
+CREATE PROCEDURE [sp_GetUnreadForUser]
+(
+@userId NVARCHAR(128)
+)
+AS
+BEGIN
+
+SELECT n.id, n.datetime,fn.advertisementId,u.FirstName,u.LastName,a.Title
+FROM UserNotifications un
+INNER JOIN Notifications n on n.id=un.NotificationId
+INNER JOIN FollowingNotifications fn on fn.Id=n.Id
+INNER JOIN Advertisements a on fn.AdvertisementId = a.Id
+INNER JOIN AspNetUsers u on u.Id = a.UserId
+WHERE un.UserId = @userId AND un.IsRead = 0;
+
+END
+
+
+go
+
+CREATE PROCEDURE [sp_InsertAdvertisement]
+(
+@followerId NVARCHAR(128),
+@followeeId NVARCHAR(128)
+)
+AS
+BEGIN
+INSERT INTO FOLLOWINGS(FollowerId,FolloweeId)
+VALUES (@followerId,@followeeId);
+END
+
